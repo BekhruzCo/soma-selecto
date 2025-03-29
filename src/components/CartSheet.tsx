@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useCart } from "@/hooks/use-cart";
-import { Trash, Plus, Minus } from "lucide-react";
+import { Trash, Plus, Minus, Truck } from "lucide-react";
 import { 
   Dialog,
   DialogContent,
@@ -21,9 +21,20 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const CartSheet = () => {
-  const { items, addItem, removeItem, clearCart, cartTotal } = useCart();
+  const { 
+    items, 
+    addItem, 
+    removeItem, 
+    clearCart, 
+    cartTotal, 
+    addOrder, 
+    freeDeliveryThreshold, 
+    hasQualifiedForFreeDelivery 
+  } = useCart();
+  
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);
   const [orderForm, setOrderForm] = useState({
     name: "",
@@ -39,19 +50,14 @@ const CartSheet = () => {
   const handleSubmitOrder = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Here you would typically send the order to a backend
-    console.log("Order submitted:", {
-      customer: orderForm,
-      items,
-      total: cartTotal,
-    });
+    // Submit the order to the cart context
+    addOrder(orderForm);
     
     toast({
       title: "Заказ оформлен!",
       description: "Мы свяжемся с вами в ближайшее время",
     });
     
-    clearCart();
     setOrderDialogOpen(false);
   };
 
@@ -80,6 +86,8 @@ const CartSheet = () => {
     );
   }
 
+  const remainingForFreeDelivery = freeDeliveryThreshold - cartTotal;
+
   return (
     <>
       <SheetHeader>
@@ -89,6 +97,24 @@ const CartSheet = () => {
             items.length < 5 ? 'товара' : 'товаров'} в корзине
         </SheetDescription>
       </SheetHeader>
+      
+      {!hasQualifiedForFreeDelivery && (
+        <Alert className="mt-4 bg-muted/50">
+          <Truck className="h-4 w-4" />
+          <AlertDescription>
+            Добавьте товаров еще на {remainingForFreeDelivery.toLocaleString()} сум для бесплатной доставки
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {hasQualifiedForFreeDelivery && (
+        <Alert className="mt-4 bg-green-50 text-green-700 border-green-200">
+          <Truck className="h-4 w-4" />
+          <AlertDescription>
+            Вы получили бесплатную доставку!
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="flex flex-col gap-3 my-4">
         {items.map((item) => (
@@ -147,9 +173,21 @@ const CartSheet = () => {
       <Separator />
       
       <div className="space-y-4 pt-4">
-        <div className="flex items-center justify-between font-medium">
-          <span>Итого:</span>
-          <span className="text-xl">{cartTotal.toLocaleString()} сум</span>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-sm">
+            <span>Сумма заказа:</span>
+            <span className="font-medium">{cartTotal.toLocaleString()} сум</span>
+          </div>
+          <div className="flex items-center justify-between text-sm">
+            <span>Доставка:</span>
+            <span className={hasQualifiedForFreeDelivery ? "text-green-600 font-medium" : "font-medium"}>
+              {hasQualifiedForFreeDelivery ? "Бесплатно" : "15,000 сум"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between font-medium pt-1.5">
+            <span>Итого:</span>
+            <span className="text-xl">{cartTotal.toLocaleString()} сум</span>
+          </div>
         </div>
         
         <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>

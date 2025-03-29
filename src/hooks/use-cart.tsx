@@ -6,12 +6,30 @@ export type CartItem = Product & {
   quantity: number;
 };
 
+export type Order = {
+  id: string;
+  items: CartItem[];
+  customer: {
+    name: string;
+    phone: string;
+    address: string;
+  };
+  total: number;
+  status: "processing" | "delivering" | "completed";
+  createdAt: Date;
+  freeDelivery: boolean;
+};
+
 interface CartContextType {
   items: CartItem[];
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (id: string) => void;
   clearCart: () => void;
   cartTotal: number;
+  orders: Order[];
+  addOrder: (customer: { name: string; phone: string; address: string }) => void;
+  freeDeliveryThreshold: number;
+  hasQualifiedForFreeDelivery: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -25,11 +43,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return [];
   });
 
+  const [orders, setOrders] = useState<Order[]>(() => {
+    if (typeof window !== 'undefined') {
+      const savedOrders = localStorage.getItem('orders');
+      const parsedOrders = savedOrders ? JSON.parse(savedOrders) : [];
+      // Convert string dates back to Date objects
+      return parsedOrders.map((order: any) => ({
+        ...order,
+        createdAt: new Date(order.createdAt)
+      }));
+    }
+    return [];
+  });
+
+  const freeDeliveryThreshold = 100000;
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('cart', JSON.stringify(items));
     }
   }, [items]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Convert Date objects to strings for storage
+      const ordersToStore = orders.map(order => ({
+        ...order,
+        createdAt: order.createdAt.toISOString()
+      }));
+      localStorage.setItem('orders', JSON.stringify(ordersToStore));
+    }
+  }, [orders]);
 
   const addItem = (product: Product, quantity: number = 1) => {
     setItems(prevItems => {
@@ -69,8 +113,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
     0
   );
 
+  const hasQualifiedForFreeDelivery = cartTotal >= freeDeliveryThreshold;
+
+  const addOrder = (customer: { name: string; phone: string; address: string }) => {
+    if (items.length === 0) return;
+
+    const newOrder: Order = {
+      id: Date.now().toString(),
+      items: [...items],
+      customer,
+      total: cartTotal,
+      status: "processing",
+      createdAt: new Date(),
+      freeDelivery: hasQualifiedForFreeDelivery
+    };
+
+    setOrders(prev => [newOrder, ...prev]);
+    clearCart();
+  };
+
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, clearCart, cartTotal }}>
+    <CartContext.Provider value={{ 
+      items, 
+      addItem, 
+      removeItem, 
+      clearCart, 
+      cartTotal, 
+      orders, 
+      addOrder,
+      freeDeliveryThreshold,
+      hasQualifiedForFreeDelivery
+    }}>
       {children}
     </CartContext.Provider>
   );

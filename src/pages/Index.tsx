@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import CartSheet from "@/components/CartSheet";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
+import OrderStatus from "@/components/OrderStatus";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -43,22 +44,25 @@ const Index = () => {
         <div className="container mx-auto px-4 pt-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Denov Baraka Somsa</h1>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" className="relative">
-                  <ShoppingCart className="h-5 w-5 mr-1" />
-                  <span>Корзина</span>
-                  {items.length > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                      {items.length}
-                    </span>
-                  )}
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="sm:max-w-md" side="right">
-                <CartSheet />
-              </SheetContent>
-            </Sheet>
+            <div className="flex items-center gap-3">
+              <OrderStatus />
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="relative">
+                    <ShoppingCart className="h-5 w-5 mr-1" />
+                    <span>Корзина</span>
+                    {items.length > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                        {items.length}
+                      </span>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="sm:max-w-md" side="right">
+                  <CartSheet />
+                </SheetContent>
+              </Sheet>
+            </div>
           </div>
           
           <CategoryFilter 
