@@ -35,6 +35,36 @@
 
     --radius: 0.5rem;
   }
+  
+  .dark {
+    --background: 30 15% 12%;
+    --foreground: 40 6% 90%;
+
+    --card: 30 15% 14%;
+    --card-foreground: 40 6% 90%;
+
+    --popover: 30 15% 14%;
+    --popover-foreground: 40 6% 90%;
+
+    --primary: 32 95% 44%;
+    --primary-foreground: 40 100% 97%;
+
+    --secondary: 35 20% 18%;
+    --secondary-foreground: 40 6% 90%;
+
+    --muted: 35 10% 18%;
+    --muted-foreground: 40 6% 64%;
+
+    --accent: 25 90% 56%;
+    --accent-foreground: 40 100% 97%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 40 100% 97%;
+
+    --border: 30 15% 24%;
+    --input: 30 15% 24%;
+    --ring: 32 95% 44%;
+  }
 }
 
 @layer base {
@@ -50,7 +80,7 @@
 
 @layer components {
   .product-card {
-    @apply bg-white rounded-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1;
+    @apply bg-card rounded-lg border border-border overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-1;
   }
   
   .product-img {

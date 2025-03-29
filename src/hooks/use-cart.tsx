@@ -1,3 +1,4 @@
+
 import { Product } from "@/data/products";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { sendTelegramNotification } from "@/utils/telegram";
@@ -31,6 +32,8 @@ interface CartContextType {
   freeDeliveryThreshold: number;
   hasQualifiedForFreeDelivery: boolean;
   updateOrderStatus: (orderId: string, status: Order["status"]) => void;
+  deliveryCost: number;
+  totalWithDelivery: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -57,6 +60,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   });
 
   const freeDeliveryThreshold = 100000;
+  const deliveryCost = 15000;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -110,6 +114,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   );
 
   const hasQualifiedForFreeDelivery = cartTotal >= freeDeliveryThreshold;
+  
+  const totalWithDelivery = hasQualifiedForFreeDelivery 
+    ? cartTotal 
+    : cartTotal + deliveryCost;
 
   const addOrder = async (customer: { name: string; phone: string; address: string }) => {
     if (items.length === 0) return;
@@ -155,7 +163,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       addOrder,
       freeDeliveryThreshold,
       hasQualifiedForFreeDelivery,
-      updateOrderStatus
+      updateOrderStatus,
+      deliveryCost,
+      totalWithDelivery
     }}>
       {children}
     </CartContext.Provider>

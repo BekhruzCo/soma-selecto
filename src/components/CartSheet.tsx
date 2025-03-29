@@ -32,7 +32,9 @@ const CartSheet = () => {
     cartTotal, 
     addOrder, 
     freeDeliveryThreshold, 
-    hasQualifiedForFreeDelivery 
+    hasQualifiedForFreeDelivery,
+    deliveryCost,
+    totalWithDelivery
   } = useCart();
   
   const [orderDialogOpen, setOrderDialogOpen] = useState(false);
@@ -108,7 +110,7 @@ const CartSheet = () => {
       )}
       
       {hasQualifiedForFreeDelivery && (
-        <Alert className="mt-4 bg-green-50 text-green-700 border-green-200">
+        <Alert className="mt-4 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
           <Truck className="h-4 w-4" />
           <AlertDescription>
             Вы получили бесплатную доставку!
@@ -180,13 +182,13 @@ const CartSheet = () => {
           </div>
           <div className="flex items-center justify-between text-sm">
             <span>Доставка:</span>
-            <span className={hasQualifiedForFreeDelivery ? "text-green-600 font-medium" : "font-medium"}>
-              {hasQualifiedForFreeDelivery ? "Бесплатно" : "15,000 сум"}
+            <span className={hasQualifiedForFreeDelivery ? "text-green-600 dark:text-green-400 font-medium" : "font-medium"}>
+              {hasQualifiedForFreeDelivery ? "Бесплатно" : `${deliveryCost.toLocaleString()} сум`}
             </span>
           </div>
           <div className="flex items-center justify-between font-medium pt-1.5">
             <span>Итого:</span>
-            <span className="text-xl">{cartTotal.toLocaleString()} сум</span>
+            <span className="text-xl">{totalWithDelivery.toLocaleString()} сум</span>
           </div>
         </div>
         

@@ -11,6 +11,7 @@ import CartSheet from "@/components/CartSheet";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Settings } from "lucide-react";
 import OrderStatus from "@/components/OrderStatus";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -46,6 +47,7 @@ const Index = () => {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Denov Baraka Somsa</h1>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <OrderStatus />
               <Link to="/admin">
                 <Button variant="outline" size="sm">

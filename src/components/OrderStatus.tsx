@@ -36,22 +36,22 @@ const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
     case "processing":
       variant = "outline";
       label = "В обработке";
-      className = "bg-yellow-50 text-yellow-700 border-yellow-200";
+      className = "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-900";
       break;
     case "delivering":
       variant = "outline";
       label = "Доставляется";
-      className = "bg-blue-50 text-blue-700 border-blue-200";
+      className = "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900";
       break;
     case "completed":
       variant = "outline";
       label = "Доставлено";
-      className = "bg-green-50 text-green-700 border-green-200";
+      className = "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900";
       break;
     case "cancelled":
       variant = "outline";
       label = "Отменен";
-      className = "bg-red-50 text-red-700 border-red-200";
+      className = "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900";
       break;
   }
 
@@ -88,50 +88,55 @@ const OrderStatus = () => {
         </DialogHeader>
 
         <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-          {orders.map((order) => (
-            <div key={order.id} className="border rounded-md p-4 space-y-3">
-              <div className="flex justify-between items-start">
+          {orders.map((order) => {
+            const deliveryCost = order.freeDelivery ? 0 : 15000;
+            const totalWithDelivery = order.total + deliveryCost;
+            
+            return (
+              <div key={order.id} className="border rounded-md p-4 space-y-3">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-medium">Заказ от {format(order.createdAt, "d MMMM, HH:mm", {locale: ru})}</p>
+                    <p className="text-sm text-muted-foreground">{order.customer.name}, {order.customer.phone}</p>
+                  </div>
+                  <OrderStatusBadge status={order.status} />
+                </div>
+                
                 <div>
-                  <p className="font-medium">Заказ от {format(order.createdAt, "d MMMM, HH:mm", {locale: ru})}</p>
-                  <p className="text-sm text-muted-foreground">{order.customer.name}, {order.customer.phone}</p>
+                  <p className="text-sm font-medium mb-1">Товары:</p>
+                  <ul className="text-sm space-y-1">
+                    {order.items.map((item) => (
+                      <li key={item.id} className="flex justify-between">
+                        <span>{item.name} × {item.quantity}</span>
+                        <span className="font-medium">{(item.price * item.quantity).toLocaleString()} сум</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <OrderStatusBadge status={order.status} />
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium mb-1">Товары:</p>
-                <ul className="text-sm space-y-1">
-                  {order.items.map((item) => (
-                    <li key={item.id} className="flex justify-between">
-                      <span>{item.name} × {item.quantity}</span>
-                      <span className="font-medium">{(item.price * item.quantity).toLocaleString()} сум</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              
-              <div className="flex flex-col border-t pt-2 mt-2">
-                <div className="flex justify-between text-sm">
-                  <span>Сумма заказа:</span>
-                  <span className="font-medium">{order.total.toLocaleString()} сум</span>
+                
+                <div className="flex flex-col border-t pt-2 mt-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Сумма заказа:</span>
+                    <span className="font-medium">{order.total.toLocaleString()} сум</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Доставка:</span>
+                    <span className={order.freeDelivery ? "text-green-600 dark:text-green-400 font-medium" : "font-medium"}>
+                      {order.freeDelivery ? "Бесплатно" : "15,000 сум"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm font-medium mt-1">
+                    <span>Итого:</span>
+                    <span>{totalWithDelivery.toLocaleString()} сум</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Доставка:</span>
-                  <span className={order.freeDelivery ? "text-green-600 font-medium" : "font-medium"}>
-                    {order.freeDelivery ? "Бесплатно" : "15,000 сум"}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm font-medium mt-1">
-                  <span>Итого:</span>
-                  <span>{order.total.toLocaleString()} сум</span>
+                
+                <div className="text-sm text-muted-foreground">
+                  <span>Адрес: {order.customer.address}</span>
                 </div>
               </div>
-              
-              <div className="text-sm text-muted-foreground">
-                <span>Адрес: {order.customer.address}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </DialogContent>
     </Dialog>
