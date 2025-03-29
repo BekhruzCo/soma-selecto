@@ -157,14 +157,14 @@ const CartSheet = () => {
             <Button className="w-full">Оформить заказ</Button>
           </DialogTrigger>
           <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Оформление заказа</DialogTitle>
+              <DialogDescription>
+                Заполните информацию для доставки
+              </DialogDescription>
+            </DialogHeader>
+            
             <form onSubmit={handleSubmitOrder}>
-              <DialogHeader>
-                <DialogTitle>Оформление заказа</DialogTitle>
-                <DialogDescription>
-                  Заполните информацию для доставки
-                </DialogDescription>
-              </DialogHeader>
-              
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Имя</Label>

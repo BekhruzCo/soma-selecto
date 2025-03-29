@@ -1,20 +1,20 @@
 
 import { useState, useEffect } from "react";
-import Header from "@/components/Header";
 import ProductGrid from "@/components/ProductGrid";
 import CategoryFilter from "@/components/CategoryFilter";
-import Hero from "@/components/Hero";
-import Footer from "@/components/Footer";
-import CartSheet from "@/components/CartSheet";
 import { products, ProductCategory } from "@/data/products";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { SheetTrigger, Sheet, SheetContent } from "@/components/ui/sheet";
 import { useCart } from "@/hooks/use-cart";
 import { Separator } from "@/components/ui/separator";
+import CartSheet from "@/components/CartSheet";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
   const [filteredProducts, setFilteredProducts] = useState(products);
+  const { items } = useCart();
   
   // Apply filters when search term or category changes
   useEffect(() => {
@@ -36,20 +36,30 @@ const Index = () => {
     
     setFilteredProducts(results);
   }, [searchTerm, selectedCategory]);
-  
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header onSearch={handleSearch} />
-      
       <main className="flex-grow pb-8">
-        <Hero />
-        
-        <div className="container mx-auto px-4 mt-16">
-          <h2 className="text-3xl font-bold mb-6">Наше меню</h2>
+        <div className="container mx-auto px-4 pt-6">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Denov Baraka Somsa</h1>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="relative">
+                  <ShoppingCart className="h-5 w-5 mr-1" />
+                  <span>Корзина</span>
+                  {items.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      {items.length}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent className="sm:max-w-md" side="right">
+                <CartSheet />
+              </SheetContent>
+            </Sheet>
+          </div>
           
           <CategoryFilter 
             selectedCategory={selectedCategory} 
@@ -61,14 +71,6 @@ const Index = () => {
           <ProductGrid products={filteredProducts} />
         </div>
       </main>
-      
-      <Sheet>
-        <SheetContent className="sm:max-w-md" side="right">
-          <CartSheet />
-        </SheetContent>
-      </Sheet>
-      
-      <Footer />
     </div>
   );
 };
