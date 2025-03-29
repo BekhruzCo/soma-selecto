@@ -1,6 +1,6 @@
-
 import { Product } from "@/data/products";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { sendTelegramNotification } from "@/utils/telegram";
 
 export type CartItem = Product & {
   quantity: number;
@@ -15,7 +15,7 @@ export type Order = {
     address: string;
   };
   total: number;
-  status: "processing" | "delivering" | "completed";
+  status: "processing" | "delivering" | "completed" | "cancelled";
   createdAt: Date;
   freeDelivery: boolean;
 };
@@ -30,6 +30,7 @@ interface CartContextType {
   addOrder: (customer: { name: string; phone: string; address: string }) => void;
   freeDeliveryThreshold: number;
   hasQualifiedForFreeDelivery: boolean;
+  updateOrderStatus: (orderId: string, status: Order["status"]) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -47,7 +48,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       const savedOrders = localStorage.getItem('orders');
       const parsedOrders = savedOrders ? JSON.parse(savedOrders) : [];
-      // Convert string dates back to Date objects
       return parsedOrders.map((order: any) => ({
         ...order,
         createdAt: new Date(order.createdAt)
@@ -66,7 +66,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // Convert Date objects to strings for storage
       const ordersToStore = orders.map(order => ({
         ...order,
         createdAt: order.createdAt.toISOString()
@@ -83,11 +82,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const newQuantity = existingItem.quantity + quantity;
         
         if (newQuantity <= 0) {
-          // Remove item if quantity becomes 0 or negative
           return prevItems.filter(item => item.id !== product.id);
         }
         
-        // Update quantity of existing item
         return prevItems.map(item => 
           item.id === product.id 
             ? { ...item, quantity: newQuantity } 
@@ -95,7 +92,6 @@ export function CartProvider({ children }: { children: ReactNode }) {
         );
       }
       
-      // Add new item
       return [...prevItems, { ...product, quantity }];
     });
   };
@@ -115,7 +111,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const hasQualifiedForFreeDelivery = cartTotal >= freeDeliveryThreshold;
 
-  const addOrder = (customer: { name: string; phone: string; address: string }) => {
+  const addOrder = async (customer: { name: string; phone: string; address: string }) => {
     if (items.length === 0) return;
 
     const newOrder: Order = {
@@ -128,8 +124,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
       freeDelivery: hasQualifiedForFreeDelivery
     };
 
+    try {
+      await sendTelegramNotification(newOrder);
+    } catch (error) {
+      console.error("Failed to send Telegram notification:", error);
+    }
+
     setOrders(prev => [newOrder, ...prev]);
     clearCart();
+  };
+
+  const updateOrderStatus = (orderId: string, status: Order["status"]) => {
+    setOrders(prevOrders => 
+      prevOrders.map(order => 
+        order.id === orderId 
+          ? { ...order, status } 
+          : order
+      )
+    );
   };
 
   return (
@@ -142,7 +154,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       orders, 
       addOrder,
       freeDeliveryThreshold,
-      hasQualifiedForFreeDelivery
+      hasQualifiedForFreeDelivery,
+      updateOrderStatus
     }}>
       {children}
     </CartContext.Provider>

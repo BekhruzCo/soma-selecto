@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useCart, Order } from "@/hooks/use-cart";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ClipboardList, Check, Truck, Package } from "lucide-react";
+import { ClipboardList, Check, Truck, Package, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const OrderStatusIcon = ({ status }: { status: Order["status"] }) => {
@@ -22,30 +22,41 @@ const OrderStatusIcon = ({ status }: { status: Order["status"] }) => {
       return <Truck className="h-4 w-4" />;
     case "completed":
       return <Check className="h-4 w-4" />;
+    case "cancelled":
+      return <X className="h-4 w-4" />;
   }
 };
 
 const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   let variant: "default" | "secondary" | "outline" = "outline";
   let label = "";
+  let className = "";
 
   switch (status) {
     case "processing":
       variant = "outline";
       label = "В обработке";
+      className = "bg-yellow-50 text-yellow-700 border-yellow-200";
       break;
     case "delivering":
-      variant = "secondary";
+      variant = "outline";
       label = "Доставляется";
+      className = "bg-blue-50 text-blue-700 border-blue-200";
       break;
     case "completed":
-      variant = "default";
+      variant = "outline";
       label = "Доставлено";
+      className = "bg-green-50 text-green-700 border-green-200";
+      break;
+    case "cancelled":
+      variant = "outline";
+      label = "Отменен";
+      className = "bg-red-50 text-red-700 border-red-200";
       break;
   }
 
   return (
-    <Badge variant={variant} className="ml-2">
+    <Badge variant={variant} className={`ml-2 ${className}`}>
       <OrderStatusIcon status={status} />
       <span className="ml-1">{label}</span>
     </Badge>

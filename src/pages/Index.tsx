@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import ProductGrid from "@/components/ProductGrid";
 import CategoryFilter from "@/components/CategoryFilter";
 import { products, ProductCategory } from "@/data/products";
@@ -8,7 +9,7 @@ import { useCart } from "@/hooks/use-cart";
 import { Separator } from "@/components/ui/separator";
 import CartSheet from "@/components/CartSheet";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Settings } from "lucide-react";
 import OrderStatus from "@/components/OrderStatus";
 
 const Index = () => {
@@ -46,6 +47,12 @@ const Index = () => {
             <h1 className="text-3xl font-bold">Denov Baraka Somsa</h1>
             <div className="flex items-center gap-3">
               <OrderStatus />
+              <Link to="/admin">
+                <Button variant="outline" size="sm">
+                  <Settings className="h-4 w-4 mr-1" />
+                  Админ
+                </Button>
+              </Link>
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="outline" className="relative">
