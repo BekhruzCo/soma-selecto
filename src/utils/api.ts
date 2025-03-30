@@ -46,12 +46,16 @@ export async function fetchProduct(id: string): Promise<Product> {
  */
 export async function createProduct(productData: FormData): Promise<Product> {
   try {
+    console.log("Creating product with data:", Object.fromEntries(productData.entries()));
+    
     const response = await fetch(`${API_URL}/products`, {
       method: 'POST',
       body: productData, // FormData for multipart/form-data (supports file uploads)
     });
     
     if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error("Server error response:", errorData);
       throw new Error(`Error creating product: ${response.statusText}`);
     }
     
@@ -67,12 +71,16 @@ export async function createProduct(productData: FormData): Promise<Product> {
  */
 export async function updateProduct(id: string, productData: FormData): Promise<Product> {
   try {
+    console.log(`Updating product ${id} with data:`, Object.fromEntries(productData.entries()));
+    
     const response = await fetch(`${API_URL}/products/${id}`, {
       method: 'PUT',
       body: productData, // FormData for multipart/form-data (supports file uploads)
     });
     
     if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error("Server error response:", errorData);
       throw new Error(`Error updating product: ${response.statusText}`);
     }
     

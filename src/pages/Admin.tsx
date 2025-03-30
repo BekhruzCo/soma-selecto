@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/pagination";
 import { updateOrderStatusViaTelegram } from "@/utils/telegram";
 import AddProductForm from "@/components/AddProductForm";
+import ProductCard from "@/components/ProductCard";
 
 const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   switch (status) {
@@ -79,6 +80,8 @@ const ProductsTab = () => {
   
   const [selectedProduct, setSelectedProduct] = useState<null | {id: string}>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
   
   const handleProductAdded = () => {
     toast({
@@ -94,6 +97,22 @@ const ProductsTab = () => {
       description: "Товар успешно удален из каталога"
     });
     setIsDeleteDialogOpen(false);
+  };
+
+  const handleEditProduct = (product: any) => {
+    setEditingProduct(product);
+    setShowEditDialog(true);
+  };
+
+  const handleProductUpdated = (updatedProduct: any) => {
+    setProducts(products.map(p => 
+      p.id === updatedProduct.id ? updatedProduct : p
+    ));
+    setShowEditDialog(false);
+    toast({
+      title: "Товар обновлен",
+      description: "Товар успешно обновлен в каталоге"
+    });
   };
 
   return (
@@ -152,7 +171,12 @@ const ProductsTab = () => {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" className="h-8">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="h-8"
+                        onClick={() => handleEditProduct(product)}
+                      >
                         <Pencil className="h-3.5 w-3.5 mr-1" />
                         Изменить
                       </Button>
@@ -199,6 +223,27 @@ const ProductsTab = () => {
           </Table>
         </CardContent>
       </Card>
+      
+      {/* Dialog for editing products */}
+      {editingProduct && (
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="sm:max-w-[525px]">
+            <DialogHeader>
+              <DialogTitle>Редактировать товар</DialogTitle>
+              <DialogDescription>
+                Внесите изменения в информацию о товаре. Нажмите сохранить, когда закончите.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <ProductCard 
+                product={editingProduct} 
+                adminMode={true} 
+                onProductUpdated={handleProductUpdated} 
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };

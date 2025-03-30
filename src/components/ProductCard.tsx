@@ -44,7 +44,8 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description);
   const [price, setPrice] = useState(product.price.toString());
-  const [category, setCategory] = useState(product.category);
+  // Fix the type error by accepting any string for category
+  const [category, setCategory] = useState<string>(product.category);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
