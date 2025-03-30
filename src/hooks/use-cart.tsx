@@ -1,7 +1,8 @@
 
 import { Product } from "@/data/products";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { sendTelegramNotification } from "@/utils/telegram";
+import { sendTelegramNotification, updateOrderStatusViaTelegram } from "@/utils/telegram";
+import { createOrder as apiCreateOrder, updateOrderStatus as apiUpdateOrderStatus, fetchOrders } from "@/utils/api";
 
 export type CartItem = Product & {
   quantity: number;
@@ -34,6 +35,7 @@ interface CartContextType {
   updateOrderStatus: (orderId: string, status: Order["status"]) => void;
   deliveryCost: number;
   totalWithDelivery: number;
+  loadOrders: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -47,17 +49,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return [];
   });
 
-  const [orders, setOrders] = useState<Order[]>(() => {
-    if (typeof window !== 'undefined') {
-      const savedOrders = localStorage.getItem('orders');
-      const parsedOrders = savedOrders ? JSON.parse(savedOrders) : [];
-      return parsedOrders.map((order: any) => ({
-        ...order,
-        createdAt: new Date(order.createdAt)
-      }));
-    }
-    return [];
-  });
+  const [orders, setOrders] = useState<Order[]>([]);
 
   const freeDeliveryThreshold = 100000;
   const deliveryCost = 15000;
@@ -69,14 +61,29 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const ordersToStore = orders.map(order => ({
-        ...order,
-        createdAt: order.createdAt.toISOString()
-      }));
-      localStorage.setItem('orders', JSON.stringify(ordersToStore));
+    // Load orders from API on initial mount
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      const apiOrders = await fetchOrders();
+      setOrders(apiOrders);
+    } catch (error) {
+      console.error("Error loading orders:", error);
+      // Fallback to local storage if API fails
+      if (typeof window !== 'undefined') {
+        const savedOrders = localStorage.getItem('orders');
+        if (savedOrders) {
+          const parsedOrders = JSON.parse(savedOrders);
+          setOrders(parsedOrders.map((order: any) => ({
+            ...order,
+            createdAt: new Date(order.createdAt)
+          })));
+        }
+      }
     }
-  }, [orders]);
+  };
 
   const addItem = (product: Product, quantity: number = 1) => {
     setItems(prevItems => {
@@ -133,23 +140,68 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
 
     try {
-      await sendTelegramNotification(newOrder);
+      // Send to API
+      const savedOrder = await apiCreateOrder(newOrder);
+      
+      // Send notification to Telegram
+      await sendTelegramNotification(savedOrder);
+      
+      // Add to local state
+      setOrders(prev => [savedOrder, ...prev]);
+      
+      // Clear cart after successful order
+      clearCart();
     } catch (error) {
-      console.error("Failed to send Telegram notification:", error);
+      console.error("Failed to create order:", error);
+      
+      // Fallback: save locally and send notification
+      try {
+        await sendTelegramNotification(newOrder);
+      } catch (telegramError) {
+        console.error("Failed to send Telegram notification:", telegramError);
+      }
+      
+      // Save to local state anyway
+      setOrders(prev => [newOrder, ...prev]);
+      clearCart();
     }
-
-    setOrders(prev => [newOrder, ...prev]);
-    clearCart();
   };
 
-  const updateOrderStatus = (orderId: string, status: Order["status"]) => {
-    setOrders(prevOrders => 
-      prevOrders.map(order => 
-        order.id === orderId 
-          ? { ...order, status } 
-          : order
-      )
-    );
+  const updateOrderStatus = async (orderId: string, status: Order["status"]) => {
+    try {
+      // Update via API
+      const updatedOrder = await apiUpdateOrderStatus(orderId, status);
+      
+      // Update local state
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...updatedOrder } 
+            : order
+        )
+      );
+      
+      // Notify Telegram
+      await updateOrderStatusViaTelegram(orderId, status);
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+      
+      // Fallback: update local state only
+      setOrders(prevOrders => 
+        prevOrders.map(order => 
+          order.id === orderId 
+            ? { ...order, status } 
+            : order
+        )
+      );
+      
+      // Try to notify Telegram anyway
+      try {
+        await updateOrderStatusViaTelegram(orderId, status);
+      } catch (telegramError) {
+        console.error("Failed to send Telegram notification:", telegramError);
+      }
+    }
   };
 
   return (
@@ -165,7 +217,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       hasQualifiedForFreeDelivery,
       updateOrderStatus,
       deliveryCost,
-      totalWithDelivery
+      totalWithDelivery,
+      loadOrders
     }}>
       {children}
     </CartContext.Provider>
