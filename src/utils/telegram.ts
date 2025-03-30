@@ -3,12 +3,11 @@ import { Order } from "@/hooks/use-cart";
 
 /**
  * Send order notification to a Telegram channel/chat
- * In production, you should replace the botToken and chatId with actual values
  */
 export async function sendTelegramNotification(order: Order) {
-  // You would need to replace these values with your actual bot token and chat ID
-  const botToken = "8157470158:AAFePV804kLO3eqMM4yuJ9UDPYXg92MszM0";
-  const chatId = "955988843";
+  // You should replace these with your actual bot token and chat ID
+  const botToken = "YOUR_BOT_TOKEN";
+  const chatId = "YOUR_CHAT_ID";
   
   // Format message
   const items = order.items.map(item => 
@@ -33,14 +32,11 @@ ${items}
 💵 Итого: ${totalWithDelivery.toLocaleString()} сум
 `;
 
-  // For demonstration purposes, we'll log it
-  console.log("Would send to Telegram:", message);
-  
-  // Now let's actually try to send it if the token is provided
-  if (botToken !== "8157470158:AAFePV804kLO3eqMM4yuJ9UDPYXg92MszM0" && chatId !== "955988843") {
-    const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    
-    try {
+  try {
+    // Only attempt to send if we have proper credentials
+    if (botToken !== "YOUR_BOT_TOKEN" && chatId !== "YOUR_CHAT_ID") {
+      const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      
       const response = await fetch(telegramApiUrl, {
         method: 'POST',
         headers: {
@@ -49,7 +45,7 @@ ${items}
         body: JSON.stringify({
           chat_id: chatId,
           text: message,
-          parse_mode: 'HTML',
+          parse_mode: 'Markdown',
         }),
       });
       
@@ -57,12 +53,65 @@ ${items}
         throw new Error(`Telegram API error: ${response.status}`);
       }
       
+      console.log("Successfully sent notification to Telegram");
       return await response.json();
-    } catch (error) {
-      console.error('Error sending Telegram notification:', error);
-      throw error;
+    } else {
+      console.log("Would send to Telegram (simulation):", message);
+      return { ok: true, simulated: true };
     }
+  } catch (error) {
+    console.error('Error sending Telegram notification:', error);
+    throw error;
   }
+}
+
+/**
+ * This function updates the order status via Telegram bot
+ * In a real implementation, this would communicate with your bot's API
+ */
+export async function updateOrderStatusViaTelegram(orderId: string, status: string) {
+  // You should replace these with your actual bot token and chat ID
+  const botToken = "YOUR_BOT_TOKEN";
+  const chatId = "YOUR_CHAT_ID";
   
-  return { ok: true, simulated: true };
+  try {
+    // Only attempt to send if we have proper credentials
+    if (botToken !== "YOUR_BOT_TOKEN" && chatId !== "YOUR_CHAT_ID") {
+      const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+      
+      const statusMessages = {
+        "processing": "принят в обработку",
+        "delivering": "передан в доставку",
+        "completed": "доставлен",
+        "cancelled": "отменен"
+      };
+      
+      const message = `Статус заказа #${orderId.slice(-5)} изменен: ${statusMessages[status as keyof typeof statusMessages]}`;
+      
+      const response = await fetch(telegramApiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: 'Markdown',
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Telegram API error: ${response.status}`);
+      }
+      
+      console.log("Successfully sent status update to Telegram");
+      return await response.json();
+    } else {
+      console.log(`Would send to Telegram: Status update for order #${orderId} - ${status}`);
+      return { ok: true, simulated: true };
+    }
+  } catch (error) {
+    console.error('Error sending Telegram status update:', error);
+    throw error;
+  }
 }

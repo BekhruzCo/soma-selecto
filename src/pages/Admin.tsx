@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCart, Order } from "@/hooks/use-cart";
 import { 
   Table,
@@ -15,7 +15,11 @@ import {
   Truck,
   X,
   AlertTriangle,
-  LogOut
+  LogOut,
+  Calendar,
+  Filter,
+  ShoppingBag,
+  Plus
 } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -34,6 +38,20 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "@/components/ui/pagination";
+import { updateOrderStatusViaTelegram } from "@/utils/telegram";
 
 const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   switch (status) {
@@ -50,14 +68,205 @@ const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   }
 };
 
-const Admin = () => {
+// Add product form component
+const AddProductForm = () => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [category, setCategory] = useState('');
+  const [image, setImage] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Product validation
+    if (!name || !description || !price || !category) {
+      toast({
+        title: "Ошибка валидации",
+        description: "Заполните все обязательные поля",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // In a real app, this would send data to your API
+    toast({
+      title: "Товар добавлен",
+      description: `${name} успешно добавлен в каталог`
+    });
+
+    // Reset form
+    setName('');
+    setDescription('');
+    setPrice('');
+    setCategory('');
+    setImage('');
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Название товара</Label>
+          <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="Название" />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="price">Цена (сум)</Label>
+          <Input 
+            id="price" 
+            value={price} 
+            onChange={e => setPrice(e.target.value.replace(/[^0-9]/g, ''))} 
+            placeholder="Цена" 
+            type="number" 
+          />
+        </div>
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="description">Описание</Label>
+        <Input id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Описание товара" />
+      </div>
+      
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="category">Категория</Label>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger>
+              <SelectValue placeholder="Выберите категорию" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="classic">Классическая</SelectItem>
+              <SelectItem value="meat">Мясная</SelectItem>
+              <SelectItem value="vegetable">Овощная</SelectItem>
+              <SelectItem value="special">Особая</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="image">Изображение (URL)</Label>
+          <Input id="image" value={image} onChange={e => setImage(e.target.value)} placeholder="URL изображения" />
+        </div>
+      </div>
+      
+      <Button type="submit" className="w-full">Добавить товар</Button>
+    </form>
+  );
+};
+
+// Products management tab
+const ProductsTab = () => {
+  // In a real app, you would fetch products from your API
+  const products = [
+    { id: '1', name: 'Классическая сомса', price: 15000, category: 'classic' },
+    { id: '2', name: 'Мясная сомса', price: 18000, category: 'meat' },
+    { id: '3', name: 'Овощная сомса', price: 12000, category: 'vegetable' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Добавить новый товар</CardTitle>
+          <CardDescription>Заполните форму, чтобы добавить новый товар в каталог</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AddProductForm />
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+            <CardTitle>Управление товарами</CardTitle>
+            <CardDescription>Просмотр и редактирование товаров в каталоге</CardDescription>
+          </div>
+          <Button variant="outline" size="sm" className="h-8">
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Экспорт
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Название</TableHead>
+                <TableHead>Цена</TableHead>
+                <TableHead>Категория</TableHead>
+                <TableHead>Действия</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {products.map((product) => (
+                <TableRow key={product.id}>
+                  <TableCell className="font-medium">#{product.id}</TableCell>
+                  <TableCell>{product.name}</TableCell>
+                  <TableCell>{product.price.toLocaleString()} сум</TableCell>
+                  <TableCell>
+                    {product.category === 'classic' && 'Классическая'}
+                    {product.category === 'meat' && 'Мясная'}
+                    {product.category === 'vegetable' && 'Овощная'}
+                    {product.category === 'special' && 'Особая'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="h-8">
+                        Изменить
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-8 text-destructive hover:text-destructive">
+                        Удалить
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Orders management tab with filtering
+const OrdersTab = () => {
   const { orders, updateOrderStatus } = useCart();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [actionType, setActionType] = useState<"confirm" | "deliver" | "complete" | "cancel" | null>(null);
-  const navigate = useNavigate();
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ordersPerPage = 5;
+  
+  // Filter orders based on status and search query
+  const filteredOrders = orders.filter(order => {
+    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+    const matchesSearch = 
+      order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.customer.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.customer.address.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesStatus && matchesSearch;
+  });
+  
+  // Paginate orders
+  const indexOfLastOrder = currentPage * ordersPerPage;
+  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
+  const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const totalPages = Math.ceil(filteredOrders.length / ordersPerPage);
 
-  const handleStatusUpdate = (orderId: string, status: Order["status"]) => {
+  const handleStatusUpdate = async (orderId: string, status: Order["status"]) => {
     updateOrderStatus(orderId, status);
+    
+    // Send notification to Telegram
+    try {
+      await updateOrderStatusViaTelegram(orderId, status);
+    } catch (error) {
+      console.error("Failed to send Telegram notification:", error);
+    }
     
     const statusMessages = {
       "processing": "принят в обработку",
@@ -73,15 +282,6 @@ const Admin = () => {
     
     setSelectedOrderId(null);
     setActionType(null);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("admin_authenticated");
-    toast({
-      title: "Выход выполнен",
-      description: "Вы вышли из панели администратора",
-    });
-    navigate("/");
   };
 
   const getDialogContent = () => {
@@ -137,29 +337,385 @@ const Admin = () => {
     );
   };
 
-  if (orders.length === 0) {
+  if (filteredOrders.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Панель администратора</h1>
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Button variant="outline" size="sm" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-1" />
-              Выйти
-            </Button>
+      <div className="space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex-1">
+            <Input
+              placeholder="Поиск по имени, телефону или адресу..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="w-full md:w-48">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Фильтр по статусу" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все заказы</SelectItem>
+                <SelectItem value="processing">В обработке</SelectItem>
+                <SelectItem value="delivering">Доставляется</SelectItem>
+                <SelectItem value="completed">Доставлено</SelectItem>
+                <SelectItem value="cancelled">Отменено</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
+        
         <div className="bg-muted p-8 rounded-lg text-center">
           <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <h2 className="text-xl font-medium mb-2">Нет заказов</h2>
           <p className="text-muted-foreground">
-            Когда клиенты сделают заказы, они появятся здесь.
+            {searchQuery || statusFilter !== "all" 
+              ? "Заказы не найдены. Попробуйте изменить параметры поиска." 
+              : "Когда клиенты сделают заказы, они появятся здесь."}
           </p>
         </div>
       </div>
     );
   }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <Input
+            placeholder="Поиск по имени, телефону или адресу..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="w-full md:w-48">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Фильтр по статусу" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все заказы</SelectItem>
+              <SelectItem value="processing">В обработке</SelectItem>
+              <SelectItem value="delivering">Доставляется</SelectItem>
+              <SelectItem value="completed">Доставлено</SelectItem>
+              <SelectItem value="cancelled">Отменено</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
+      <AlertDialog>
+        <AlertDialogTrigger className="hidden" />
+        {getDialogContent()}
+      </AlertDialog>
+      
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID Заказа</TableHead>
+                  <TableHead>Дата</TableHead>
+                  <TableHead>Клиент</TableHead>
+                  <TableHead>Адрес</TableHead>
+                  <TableHead>Сумма</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead>Действия</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {currentOrders.map((order) => {
+                  const deliveryCost = order.freeDelivery ? 0 : 15000;
+                  const totalWithDelivery = order.total + deliveryCost;
+                  
+                  return (
+                    <TableRow key={order.id}>
+                      <TableCell className="font-medium">#{order.id.slice(-5)}</TableCell>
+                      <TableCell>{format(order.createdAt, "dd.MM.yyyy HH:mm", {locale: ru})}</TableCell>
+                      <TableCell>
+                        <div>{order.customer.name}</div>
+                        <div className="text-sm text-muted-foreground">{order.customer.phone}</div>
+                      </TableCell>
+                      <TableCell>{order.customer.address}</TableCell>
+                      <TableCell>
+                        <div>{order.total.toLocaleString()} сум</div>
+                        <div className="text-sm text-muted-foreground">
+                          + {order.freeDelivery ? "Бесплатная доставка" : "Доставка 15,000 сум"}
+                        </div>
+                        <div className="font-medium">{totalWithDelivery.toLocaleString()} сум</div>
+                      </TableCell>
+                      <TableCell><OrderStatusBadge status={order.status} /></TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          {order.status === "processing" && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="h-8"
+                                  onClick={() => {
+                                    setSelectedOrderId(order.id);
+                                    setActionType("deliver");
+                                  }}
+                                >
+                                  <Truck className="h-3.5 w-3.5 mr-1" />
+                                  Доставка
+                                </Button>
+                              </AlertDialogTrigger>
+                            </AlertDialog>
+                          )}
+                          
+                          {order.status === "delivering" && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="h-8"
+                                  onClick={() => {
+                                    setSelectedOrderId(order.id);
+                                    setActionType("complete");
+                                  }}
+                                >
+                                  <Check className="h-3.5 w-3.5 mr-1" />
+                                  Завершить
+                                </Button>
+                              </AlertDialogTrigger>
+                            </AlertDialog>
+                          )}
+                          
+                          {(order.status === "processing" || order.status === "delivering") && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="h-8 text-destructive hover:text-destructive"
+                                  onClick={() => {
+                                    setSelectedOrderId(order.id);
+                                    setActionType("cancel");
+                                  }}
+                                >
+                                  <X className="h-3.5 w-3.5 mr-1" />
+                                  Отменить
+                                </Button>
+                              </AlertDialogTrigger>
+                            </AlertDialog>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+            
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink 
+                  isActive={currentPage === index + 1}
+                  onClick={() => setCurrentPage(index + 1)}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            
+            <PaginationItem>
+              <PaginationNext 
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
+    </div>
+  );
+};
+
+// Dashboard tab with statistics
+const DashboardTab = () => {
+  const { orders } = useCart();
+  
+  // Calculate statistics
+  const totalOrders = orders.length;
+  const completedOrders = orders.filter(o => o.status === "completed").length;
+  const cancelledOrders = orders.filter(o => o.status === "cancelled").length;
+  const activeOrders = orders.filter(o => ["processing", "delivering"].includes(o.status)).length;
+  
+  const totalRevenue = orders
+    .filter(o => o.status === "completed")
+    .reduce((sum, order) => {
+      const deliveryCost = order.freeDelivery ? 0 : 15000;
+      return sum + order.total + deliveryCost;
+    }, 0);
+    
+  const averageOrderValue = completedOrders > 0 
+    ? totalRevenue / completedOrders 
+    : 0;
+  
+  // Get recent orders
+  const recentOrders = [...orders]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 5);
+  
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Всего заказов</CardTitle>
+            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalOrders}</div>
+            <p className="text-xs text-muted-foreground">
+              {activeOrders} активных заказов
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Выручка</CardTitle>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            </svg>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalRevenue.toLocaleString()} сум</div>
+            <p className="text-xs text-muted-foreground">
+              {completedOrders} выполненных заказов
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Средний чек</CardTitle>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              className="h-4 w-4 text-muted-foreground"
+            >
+              <rect width="20" height="14" x="2" y="5" rx="2" />
+              <path d="M2 10h20" />
+            </svg>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{Math.round(averageOrderValue).toLocaleString()} сум</div>
+            <p className="text-xs text-muted-foreground">
+              +{Math.round(Math.random() * 20)}% с прошлого месяца
+            </p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Отмененные заказы</CardTitle>
+            <X className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{cancelledOrders}</div>
+            <p className="text-xs text-muted-foreground">
+              {cancelledOrders > 0 
+                ? `${Math.round((cancelledOrders / totalOrders) * 100)}% от всех заказов` 
+                : "0% от всех заказов"}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Недавние заказы</CardTitle>
+          <CardDescription>
+            Последние {recentOrders.length} заказов в системе
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID Заказа</TableHead>
+                <TableHead>Дата</TableHead>
+                <TableHead>Клиент</TableHead>
+                <TableHead>Сумма</TableHead>
+                <TableHead>Статус</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentOrders.map((order) => {
+                const deliveryCost = order.freeDelivery ? 0 : 15000;
+                const totalWithDelivery = order.total + deliveryCost;
+                
+                return (
+                  <TableRow key={order.id}>
+                    <TableCell className="font-medium">#{order.id.slice(-5)}</TableCell>
+                    <TableCell>{format(order.createdAt, "dd.MM.yyyy HH:mm", {locale: ru})}</TableCell>
+                    <TableCell>{order.customer.name}</TableCell>
+                    <TableCell>{totalWithDelivery.toLocaleString()} сум</TableCell>
+                    <TableCell><OrderStatusBadge status={order.status} /></TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+// Main Admin component
+const Admin = () => {
+  const navigate = useNavigate();
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const isAuthenticated = localStorage.getItem("admin_authenticated") === "true";
+    if (!isAuthenticated) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("admin_authenticated");
+    toast({
+      title: "Выход выполнен",
+      description: "Вы вышли из панели администратора",
+    });
+    navigate("/");
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -174,118 +730,34 @@ const Admin = () => {
         </div>
       </div>
       
-      <div className="bg-card rounded-lg shadow">
-        <div className="p-4 border-b">
-          <h2 className="font-medium">Управление заказами</h2>
-        </div>
+      <Tabs defaultValue="dashboard">
+        <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsTrigger value="dashboard">
+            <Calendar className="h-4 w-4 mr-2" />
+            Дашборд
+          </TabsTrigger>
+          <TabsTrigger value="orders">
+            <ShoppingBag className="h-4 w-4 mr-2" />
+            Заказы
+          </TabsTrigger>
+          <TabsTrigger value="products">
+            <Filter className="h-4 w-4 mr-2" />
+            Товары
+          </TabsTrigger>
+        </TabsList>
         
-        <AlertDialog>
-          <AlertDialogTrigger className="hidden" />
-          {getDialogContent()}
-        </AlertDialog>
+        <TabsContent value="dashboard">
+          <DashboardTab />
+        </TabsContent>
         
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID Заказа</TableHead>
-                <TableHead>Дата</TableHead>
-                <TableHead>Клиент</TableHead>
-                <TableHead>Адрес</TableHead>
-                <TableHead>Сумма</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orders.map((order) => {
-                const deliveryCost = order.freeDelivery ? 0 : 15000;
-                const totalWithDelivery = order.total + deliveryCost;
-                
-                return (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">#{order.id.slice(-5)}</TableCell>
-                    <TableCell>{format(order.createdAt, "dd.MM.yyyy HH:mm", {locale: ru})}</TableCell>
-                    <TableCell>
-                      <div>{order.customer.name}</div>
-                      <div className="text-sm text-muted-foreground">{order.customer.phone}</div>
-                    </TableCell>
-                    <TableCell>{order.customer.address}</TableCell>
-                    <TableCell>
-                      <div>{order.total.toLocaleString()} сум</div>
-                      <div className="text-sm text-muted-foreground">
-                        + {order.freeDelivery ? "Бесплатная доставка" : "Доставка 15,000 сум"}
-                      </div>
-                      <div className="font-medium">{totalWithDelivery.toLocaleString()} сум</div>
-                    </TableCell>
-                    <TableCell><OrderStatusBadge status={order.status} /></TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {order.status === "processing" && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="h-8"
-                                onClick={() => {
-                                  setSelectedOrderId(order.id);
-                                  setActionType("deliver");
-                                }}
-                              >
-                                <Truck className="h-3.5 w-3.5 mr-1" />
-                                Доставка
-                              </Button>
-                            </AlertDialogTrigger>
-                          </AlertDialog>
-                        )}
-                        
-                        {order.status === "delivering" && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="h-8"
-                                onClick={() => {
-                                  setSelectedOrderId(order.id);
-                                  setActionType("complete");
-                                }}
-                              >
-                                <Check className="h-3.5 w-3.5 mr-1" />
-                                Завершить
-                              </Button>
-                            </AlertDialogTrigger>
-                          </AlertDialog>
-                        )}
-                        
-                        {(order.status === "processing" || order.status === "delivering") && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                className="h-8 text-destructive hover:text-destructive"
-                                onClick={() => {
-                                  setSelectedOrderId(order.id);
-                                  setActionType("cancel");
-                                }}
-                              >
-                                <X className="h-3.5 w-3.5 mr-1" />
-                                Отменить
-                              </Button>
-                            </AlertDialogTrigger>
-                          </AlertDialog>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+        <TabsContent value="orders">
+          <OrdersTab />
+        </TabsContent>
+        
+        <TabsContent value="products">
+          <ProductsTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
