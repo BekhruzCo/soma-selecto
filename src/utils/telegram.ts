@@ -6,8 +6,8 @@ import { Order } from "@/hooks/use-cart";
  */
 export async function sendTelegramNotification(order: Order) {
   // You should replace these with your actual bot token and chat ID
-  const botToken = "YOUR_BOT_TOKEN";
-  const chatId = "YOUR_CHAT_ID";
+  const botToken = "8157470158:AAFePV804kLO3eqMM4yuJ9UDPYXg92MszM0";
+  const chatId = "955988843";
   
   // Format message
   const items = order.items.map(item => 
@@ -34,7 +34,7 @@ ${items}
 
   try {
     // Only attempt to send if we have proper credentials
-    if (botToken !== "YOUR_BOT_TOKEN" && chatId !== "YOUR_CHAT_ID") {
+    if (botToken !== "8157470158:AAFePV804kLO3eqMM4yuJ9UDPYXg92MszM0" && chatId !== "955988843") {
       const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
       
       const response = await fetch(telegramApiUrl, {
