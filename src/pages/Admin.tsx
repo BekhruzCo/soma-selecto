@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useCart, Order } from "@/hooks/use-cart";
 import { 
@@ -19,7 +18,9 @@ import {
   Calendar,
   Filter,
   ShoppingBag,
-  Plus
+  Plus,
+  Pencil,
+  Trash2
 } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -52,6 +53,7 @@ import {
   PaginationPrevious 
 } from "@/components/ui/pagination";
 import { updateOrderStatusViaTelegram } from "@/utils/telegram";
+import AddProductForm from "@/components/AddProductForm";
 
 const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   switch (status) {
@@ -68,101 +70,31 @@ const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   }
 };
 
-// Add product form component
-const AddProductForm = () => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [category, setCategory] = useState('');
-  const [image, setImage] = useState('');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Product validation
-    if (!name || !description || !price || !category) {
-      toast({
-        title: "Ошибка валидации",
-        description: "Заполните все обязательные поля",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    // In a real app, this would send data to your API
+const ProductsTab = () => {
+  const [products, setProducts] = useState([
+    { id: '1', name: 'Классическая сомса', price: 15000, category: 'classic', image: '/classic-somsa.jpg' },
+    { id: '2', name: 'Мясная сомса', price: 18000, category: 'meat', image: '/lamb-somsa.jpg' },
+    { id: '3', name: 'Овощная сомса', price: 12000, category: 'vegetable', image: '/vegetable-somsa.jpg' },
+  ]);
+  
+  const [selectedProduct, setSelectedProduct] = useState<null | {id: string}>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  
+  const handleProductAdded = () => {
     toast({
       title: "Товар добавлен",
-      description: `${name} успешно добавлен в каталог`
+      description: "Новый товар успешно добавлен в каталог"
     });
-
-    // Reset form
-    setName('');
-    setDescription('');
-    setPrice('');
-    setCategory('');
-    setImage('');
   };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="name">Название товара</Label>
-          <Input id="name" value={name} onChange={e => setName(e.target.value)} placeholder="Название" />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="price">Цена (сум)</Label>
-          <Input 
-            id="price" 
-            value={price} 
-            onChange={e => setPrice(e.target.value.replace(/[^0-9]/g, ''))} 
-            placeholder="Цена" 
-            type="number" 
-          />
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="description">Описание</Label>
-        <Input id="description" value={description} onChange={e => setDescription(e.target.value)} placeholder="Описание товара" />
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="category">Категория</Label>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Выберите категорию" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="classic">Классическая</SelectItem>
-              <SelectItem value="meat">Мясная</SelectItem>
-              <SelectItem value="vegetable">Овощная</SelectItem>
-              <SelectItem value="special">Особая</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="image">Изображение (URL)</Label>
-          <Input id="image" value={image} onChange={e => setImage(e.target.value)} placeholder="URL изображения" />
-        </div>
-      </div>
-      
-      <Button type="submit" className="w-full">Добавить товар</Button>
-    </form>
-  );
-};
-
-// Products management tab
-const ProductsTab = () => {
-  // In a real app, you would fetch products from your API
-  const products = [
-    { id: '1', name: 'Классическая сомса', price: 15000, category: 'classic' },
-    { id: '2', name: 'Мясная сомса', price: 18000, category: 'meat' },
-    { id: '3', name: 'Овощная сомса', price: 12000, category: 'vegetable' },
-  ];
+  
+  const handleDeleteProduct = (productId: string) => {
+    setProducts(products.filter(p => p.id !== productId));
+    toast({
+      title: "Товар удален",
+      description: "Товар успешно удален из каталога"
+    });
+    setIsDeleteDialogOpen(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -172,7 +104,7 @@ const ProductsTab = () => {
           <CardDescription>Заполните форму, чтобы добавить новый товар в каталог</CardDescription>
         </CardHeader>
         <CardContent>
-          <AddProductForm />
+          <AddProductForm onProductAdded={handleProductAdded} />
         </CardContent>
       </Card>
       
@@ -191,6 +123,7 @@ const ProductsTab = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Изображение</TableHead>
                 <TableHead>ID</TableHead>
                 <TableHead>Название</TableHead>
                 <TableHead>Цена</TableHead>
@@ -201,6 +134,13 @@ const ProductsTab = () => {
             <TableBody>
               {products.map((product) => (
                 <TableRow key={product.id}>
+                  <TableCell>
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      className="h-10 w-10 rounded-md object-cover"
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">#{product.id}</TableCell>
                   <TableCell>{product.name}</TableCell>
                   <TableCell>{product.price.toLocaleString()} сум</TableCell>
@@ -213,11 +153,44 @@ const ProductsTab = () => {
                   <TableCell>
                     <div className="flex gap-2">
                       <Button variant="outline" size="sm" className="h-8">
+                        <Pencil className="h-3.5 w-3.5 mr-1" />
                         Изменить
                       </Button>
-                      <Button variant="outline" size="sm" className="h-8 text-destructive hover:text-destructive">
-                        Удалить
-                      </Button>
+                      <AlertDialog open={isDeleteDialogOpen && selectedProduct?.id === product.id}>
+                        <AlertDialogTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 text-destructive hover:text-destructive"
+                            onClick={() => {
+                              setSelectedProduct(product);
+                              setIsDeleteDialogOpen(true);
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1" />
+                            Удалить
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Удалить товар?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
+                              Отмена
+                            </AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => selectedProduct && handleDeleteProduct(selectedProduct.id)}
+                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            >
+                              Удалить
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -230,7 +203,6 @@ const ProductsTab = () => {
   );
 };
 
-// Orders management tab with filtering
 const OrdersTab = () => {
   const { orders, updateOrderStatus } = useCart();
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
@@ -240,7 +212,6 @@ const OrdersTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
   
-  // Filter orders based on status and search query
   const filteredOrders = orders.filter(order => {
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
     const matchesSearch = 
@@ -252,7 +223,6 @@ const OrdersTab = () => {
     return matchesStatus && matchesSearch;
   });
   
-  // Paginate orders
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);
@@ -261,7 +231,6 @@ const OrdersTab = () => {
   const handleStatusUpdate = async (orderId: string, status: Order["status"]) => {
     updateOrderStatus(orderId, status);
     
-    // Send notification to Telegram
     try {
       await updateOrderStatusViaTelegram(orderId, status);
     } catch (error) {
@@ -548,11 +517,9 @@ const OrdersTab = () => {
   );
 };
 
-// Dashboard tab with statistics
 const DashboardTab = () => {
   const { orders } = useCart();
   
-  // Calculate statistics
   const totalOrders = orders.length;
   const completedOrders = orders.filter(o => o.status === "completed").length;
   const cancelledOrders = orders.filter(o => o.status === "cancelled").length;
@@ -569,7 +536,6 @@ const DashboardTab = () => {
     ? totalRevenue / completedOrders 
     : 0;
   
-  // Get recent orders
   const recentOrders = [...orders]
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 5);
@@ -696,11 +662,9 @@ const DashboardTab = () => {
   );
 };
 
-// Main Admin component
 const Admin = () => {
   const navigate = useNavigate();
 
-  // Check authentication on component mount
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("admin_authenticated") === "true";
     if (!isAuthenticated) {

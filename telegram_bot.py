@@ -19,7 +19,7 @@ import os
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.filters import Command
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, FSInputFile
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -185,7 +185,19 @@ async def cmd_products(message: types.Message):
 💰 {product["price"]} сум
 🏷 Категория: {product["category"]}
 """
-        await message.answer(product_text)
+        # If product has an image, send it with the message
+        if product.get("image"):
+            try:
+                # Try to send the image with caption
+                await message.answer_photo(
+                    photo=product["image"],
+                    caption=product_text
+                )
+            except Exception as e:
+                logging.error(f"Error sending product image: {e}")
+                await message.answer(product_text)
+        else:
+            await message.answer(product_text)
 
 # Statistics command handler
 @router.message(Command("stats"))
@@ -302,6 +314,9 @@ async def process_image(message: types.Message, state: FSMContext):
     if message.photo:
         # In a real app, you would save the photo or its file_id
         image = message.photo[-1].file_id
+    elif message.text and message.text.lower() != "пропустить":
+        await message.answer("Это не изображение. Пришлите изображение или отправьте 'пропустить':")
+        return
     else:
         image = None
     
@@ -316,7 +331,15 @@ async def process_image(message: types.Message, state: FSMContext):
     
     products.append(new_product)
     
-    await message.answer(f"Товар '{data['name']}' успешно добавлен!")
+    # Send confirmation with image preview if available
+    if image:
+        await message.answer_photo(
+            photo=image,
+            caption=f"Товар '{data['name']}' успешно добавлен!"
+        )
+    else:
+        await message.answer(f"Товар '{data['name']}' успешно добавлен!")
+    
     await state.clear()
 
 # Callback query handler for order actions
@@ -398,6 +421,7 @@ async def handle_webhook_data(message: types.Message):
         
         # Validate order data
         if not isinstance(order_data, dict) or "id" not in order_data:
+            logging.error("Invalid order data format")
             return
         
         order_id = order_data["id"][-5:]  # Last 5 digits
