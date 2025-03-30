@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProduct } from "@/utils/api";
 import { sendProductUpdateToTelegram } from "@/utils/telegram";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProductCardProps {
   product: Product;
@@ -261,13 +262,22 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
                 <Label htmlFor="category" className="text-right">
                   Категория
                 </Label>
-                <Input
-                  id="category"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="col-span-3"
-                  required
-                />
+                <div className="col-span-3">
+                  <Select 
+                    value={category} 
+                    onValueChange={setCategory}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Выберите категорию" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="classic">Классическая</SelectItem>
+                      <SelectItem value="meat">Мясная</SelectItem>
+                      <SelectItem value="vegetable">Овощная</SelectItem>
+                      <SelectItem value="special">Особая</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="image" className="text-right">
