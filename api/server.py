@@ -1,3 +1,4 @@
+
 """
 Denov Baraka Somsa REST API
 
@@ -13,7 +14,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, sta
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import JSONResponse
-from typing import List, Optional
+from typing import List, Optional, Union, Dict, Any
 from pydantic import BaseModel
 from datetime import datetime
 import json
@@ -199,7 +200,10 @@ async def update_product(
         product["category"] = category
     
     if popular is not None:
-        product["popular"] = popular
+        if isinstance(popular, str):
+            product["popular"] = popular.lower() == "true"
+        else:
+            product["popular"] = popular
     
     if image:
         # Delete old image if exists

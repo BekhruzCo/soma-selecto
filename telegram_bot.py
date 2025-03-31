@@ -85,6 +85,20 @@ def get_admin_keyboard():
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
+# Keyboard for product categories
+def get_category_keyboard():
+    keyboard = [
+        [
+            InlineKeyboardButton(text="Классическая", callback_data="cat_classic"),
+            InlineKeyboardButton(text="Мясная", callback_data="cat_meat")
+        ],
+        [
+            InlineKeyboardButton(text="Овощная", callback_data="cat_vegetable"),
+            InlineKeyboardButton(text="Особая", callback_data="cat_special")
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+
 # Helper function to get products from API
 def get_products_from_api():
     try:
@@ -338,14 +352,40 @@ async def process_price(message: types.Message, state: FSMContext):
     try:
         price = float(message.text)
         await state.update_data(price=price)
-        await message.answer("Введите категорию товара:")
+        await message.answer("Выберите категорию товара:", 
+                           reply_markup=get_category_keyboard())
         await state.set_state(ProductStates.waiting_for_category)
     except ValueError:
         await message.answer("Пожалуйста, введите корректную цену (только число):")
 
+@router.callback_query(lambda c: c.data.startswith("cat_"))
+async def process_category_selection(callback: types.CallbackQuery, state: FSMContext):
+    category = callback.data.split("_")[1]
+    category_names = {
+        "classic": "Классическая",
+        "meat": "Мясная", 
+        "vegetable": "Овощная",
+        "special": "Особая"
+    }
+    
+    await state.update_data(category=category)
+    await callback.message.answer(f"Выбрана категория: {category_names.get(category, category)}")
+    await callback.message.answer("Пришлите изображение товара (или отправьте 'пропустить' чтобы пропустить этот шаг):")
+    await state.set_state(ProductStates.waiting_for_image)
+    await callback.answer()
+
 @router.message(ProductStates.waiting_for_category)
-async def process_category(message: types.Message, state: FSMContext):
-    await state.update_data(category=message.text)
+async def process_category_text(message: types.Message, state: FSMContext):
+    # This handles direct text input for category if user doesn't use the keyboard
+    category_map = {
+        "классическая": "classic",
+        "мясная": "meat",
+        "овощная": "vegetable",
+        "особая": "special"
+    }
+    
+    category = category_map.get(message.text.lower(), message.text.lower())
+    await state.update_data(category=category)
     await message.answer("Пришлите изображение товара (или отправьте 'пропустить' чтобы пропустить этот шаг):")
     await state.set_state(ProductStates.waiting_for_image)
 

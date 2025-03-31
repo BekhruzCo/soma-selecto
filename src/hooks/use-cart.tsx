@@ -3,6 +3,7 @@ import { Product } from "@/data/products";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { sendTelegramNotification, updateOrderStatusViaTelegram } from "@/utils/telegram";
 import { createOrder as apiCreateOrder, updateOrderStatus as apiUpdateOrderStatus, fetchOrders } from "@/utils/api";
+import { toast } from "@/hooks/use-toast";
 
 export type CartItem = Product & {
   quantity: number;
@@ -50,6 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   });
 
   const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const freeDeliveryThreshold = 100000;
   const deliveryCost = 15000;
@@ -67,6 +69,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const loadOrders = async () => {
     try {
+      setIsLoading(true);
       const apiOrders = await fetchOrders();
       setOrders(apiOrders);
     } catch (error) {
@@ -82,6 +85,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
           })));
         }
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -151,6 +156,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       // Clear cart after successful order
       clearCart();
+      
+      toast({
+        title: "Заказ оформлен",
+        description: "Ваш заказ успешно оформлен и передан в обработку",
+        duration: 5000,
+      });
+      
     } catch (error) {
       console.error("Failed to create order:", error);
       
@@ -164,6 +176,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       // Save to local state anyway
       setOrders(prev => [newOrder, ...prev]);
       clearCart();
+      
+      toast({
+        title: "Заказ оформлен",
+        description: "Ваш заказ принят, но возникли проблемы с соединением. Мы свяжемся с вами для подтверждения.",
+        duration: 5000,
+      });
     }
   };
 
@@ -183,6 +201,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       // Notify Telegram
       await updateOrderStatusViaTelegram(orderId, status);
+      
+      // Show toast notification
+      const statusMessages = {
+        "processing": "принят в обработку",
+        "delivering": "передан в доставку",
+        "completed": "доставлен",
+        "cancelled": "отменен"
+      };
+      
+      toast({
+        title: "Статус заказа обновлен",
+        description: `Заказ #${orderId.slice(-5)} ${statusMessages[status]}`,
+        duration: 3000,
+      });
+      
     } catch (error) {
       console.error("Failed to update order status:", error);
       
@@ -201,6 +234,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } catch (telegramError) {
         console.error("Failed to send Telegram notification:", telegramError);
       }
+      
+      toast({
+        title: "Статус заказа обновлен",
+        description: "Статус обновлен локально, но возникли проблемы с синхронизацией",
+        variant: "destructive",
+        duration: 3000,
+      });
     }
   };
 

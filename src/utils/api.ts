@@ -16,6 +16,8 @@ export async function fetchProducts(): Promise<Product[]> {
   try {
     const response = await fetch(`${API_URL}/products`);
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server response:", errorText);
       throw new Error(`Error fetching products: ${response.statusText}`);
     }
     return await response.json();

@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { updateProduct } from "@/utils/api";
 import { sendProductUpdateToTelegram } from "@/utils/telegram";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 interface ProductCardProps {
   product: Product;
@@ -45,8 +46,8 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
   const [name, setName] = useState(product.name);
   const [description, setDescription] = useState(product.description);
   const [price, setPrice] = useState(product.price.toString());
-  // Fix the type error by accepting any string for category
-  const [category, setCategory] = useState<string>(product.category);
+  const [category, setCategory] = useState<string>(product.category || 'classic');
+  const [popular, setPopular] = useState<boolean>(product.popular || false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   
@@ -85,6 +86,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
       formData.append('description', description);
       formData.append('price', price);
       formData.append('category', category);
+      formData.append('popular', popular.toString());
       
       if (selectedImage) {
         formData.append('image', selectedImage);
@@ -133,7 +135,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
         <div className="relative">
           <div className="overflow-hidden">
             <img 
-              src={product.image} 
+              src={product.image || "/placeholder.svg"} 
               alt={product.name} 
               className="product-img w-full h-48 object-cover transition-transform duration-500 hover:scale-110" 
             />
@@ -280,6 +282,21 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="popular" className="text-right">
+                  Популярное
+                </Label>
+                <div className="flex items-center space-x-2 col-span-3">
+                  <Switch 
+                    id="popular" 
+                    checked={popular} 
+                    onCheckedChange={setPopular} 
+                  />
+                  <Label htmlFor="popular">
+                    {popular ? "Да" : "Нет"}
+                  </Label>
+                </div>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="image" className="text-right">
                   Изображение
                 </Label>
@@ -289,7 +306,6 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="col-span-3"
                   />
                   {(imagePreview || product.image) && (
                     <div className="mt-2">

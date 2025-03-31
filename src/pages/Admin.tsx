@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useCart, Order } from "@/hooks/use-cart";
 import { 
@@ -65,6 +64,9 @@ import {
 import { updateOrderStatusViaTelegram } from "@/utils/telegram";
 import AddProductForm from "@/components/AddProductForm";
 import ProductCard from "@/components/ProductCard";
+import { fetchProducts, deleteProduct } from "@/utils/api";
+import { sendProductUpdateToTelegram } from "@/utils/telegram";
+import { Product } from "@/data/products";
 
 const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   switch (status) {
@@ -82,39 +84,79 @@ const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
 };
 
 const ProductsTab = () => {
-  const [products, setProducts] = useState([
-    { id: '1', name: 'Классическая сомса', price: 15000, category: 'classic', image: '/classic-somsa.jpg' },
-    { id: '2', name: 'Мясная сомса', price: 18000, category: 'meat', image: '/lamb-somsa.jpg' },
-    { id: '3', name: 'Овощная сомса', price: 12000, category: 'vegetable', image: '/vegetable-somsa.jpg' },
-  ]);
-  
-  const [selectedProduct, setSelectedProduct] = useState<null | {id: string}>(null);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
-  const handleProductAdded = () => {
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedProducts = await fetchProducts();
+        setProducts(fetchedProducts);
+      } catch (error) {
+        console.error("Error loading products:", error);
+        toast({
+          title: "Ошибка",
+          description: "Не удалось загрузить список товаров",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadProducts();
+  }, []);
+  
+  const handleProductAdded = (newProduct: Product) => {
+    setProducts(prev => [...prev, newProduct]);
     toast({
       title: "Товар добавлен",
       description: "Новый товар успешно добавлен в каталог"
     });
   };
   
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(products.filter(p => p.id !== productId));
-    toast({
-      title: "Товар удален",
-      description: "Товар успешно удален из каталога"
-    });
-    setIsDeleteDialogOpen(false);
+  const handleDeleteProduct = async (productId: string) => {
+    try {
+      await deleteProduct(productId);
+      
+      // Notify Telegram
+      const productToDelete = products.find(p => p.id === productId);
+      if (productToDelete) {
+        await sendProductUpdateToTelegram('delete', {
+          id: productToDelete.id,
+          name: productToDelete.name,
+          price: productToDelete.price,
+        });
+      }
+      
+      setProducts(products.filter(p => p.id !== productId));
+      toast({
+        title: "Товар удален",
+        description: "Товар успешно удален из каталога"
+      });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast({
+        title: "Ошибка",
+        description: "Не удалось удалить товар",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleteDialogOpen(false);
+    }
   };
 
-  const handleEditProduct = (product: any) => {
+  const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setShowEditDialog(true);
   };
 
-  const handleProductUpdated = (updatedProduct: any) => {
+  const handleProductUpdated = (updatedProduct: Product) => {
     setProducts(products.map(p => 
       p.id === updatedProduct.id ? updatedProduct : p
     ));
@@ -124,6 +166,14 @@ const ProductsTab = () => {
       description: "Товар успешно обновлен в каталоге"
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center p-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -149,88 +199,98 @@ const ProductsTab = () => {
           </Button>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Изображение</TableHead>
-                <TableHead>ID</TableHead>
-                <TableHead>Название</TableHead>
-                <TableHead>Цена</TableHead>
-                <TableHead>Категория</TableHead>
-                <TableHead>Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {products.map((product) => (
-                <TableRow key={product.id}>
-                  <TableCell>
-                    <img 
-                      src={product.image} 
-                      alt={product.name} 
-                      className="h-10 w-10 rounded-md object-cover"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">#{product.id}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.price.toLocaleString()} сум</TableCell>
-                  <TableCell>
-                    {product.category === 'classic' && 'Классическая'}
-                    {product.category === 'meat' && 'Мясная'}
-                    {product.category === 'vegetable' && 'Овощная'}
-                    {product.category === 'special' && 'Особая'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="h-8"
-                        onClick={() => handleEditProduct(product)}
-                      >
-                        <Pencil className="h-3.5 w-3.5 mr-1" />
-                        Изменить
-                      </Button>
-                      <AlertDialog open={isDeleteDialogOpen && selectedProduct?.id === product.id}>
-                        <AlertDialogTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 text-destructive hover:text-destructive"
-                            onClick={() => {
-                              setSelectedProduct(product);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                          >
-                            <Trash2 className="h-3.5 w-3.5 mr-1" />
-                            Удалить
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Удалить товар?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
-                              Отмена
-                            </AlertDialogCancel>
-                            <AlertDialogAction 
-                              onClick={() => selectedProduct && handleDeleteProduct(selectedProduct.id)}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                            >
-                              Удалить
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+          {products.length === 0 ? (
+            <div className="text-center py-8">
+              <AlertTriangle className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium">Нет товаров</h3>
+              <p className="text-muted-foreground">
+                Добавьте первый товар с помощью формы выше
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Изображение</TableHead>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Название</TableHead>
+                  <TableHead>Цена</TableHead>
+                  <TableHead>Категория</TableHead>
+                  <TableHead>Действия</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell>
+                      <img 
+                        src={product.image || "/placeholder.svg"} 
+                        alt={product.name} 
+                        className="h-10 w-10 rounded-md object-cover"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">#{product.id.slice(-5)}</TableCell>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>{product.price.toLocaleString()} сум</TableCell>
+                    <TableCell>
+                      {product.category === 'classic' && 'Классическая'}
+                      {product.category === 'meat' && 'Мясная'}
+                      {product.category === 'vegetable' && 'Овощная'}
+                      {product.category === 'special' && 'Особая'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-8"
+                          onClick={() => handleEditProduct(product)}
+                        >
+                          <Pencil className="h-3.5 w-3.5 mr-1" />
+                          Изменить
+                        </Button>
+                        <AlertDialog open={isDeleteDialogOpen && selectedProduct?.id === product.id}>
+                          <AlertDialogTrigger asChild>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-8 text-destructive hover:text-destructive"
+                              onClick={() => {
+                                setSelectedProduct(product);
+                                setIsDeleteDialogOpen(true);
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5 mr-1" />
+                              Удалить
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Удалить товар?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Вы уверены, что хотите удалить этот товар? Это действие нельзя отменить.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
+                                Отмена
+                              </AlertDialogCancel>
+                              <AlertDialogAction 
+                                onClick={() => selectedProduct && handleDeleteProduct(selectedProduct.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Удалить
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
       
@@ -414,7 +474,7 @@ const OrdersTab = () => {
         <div className="w-full md:w-48">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger>
-              <SelectValue placeholder="Фильтр по статусу" />
+              <SelectValue placeholder="Фильтр по стatusу" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Все заказы</SelectItem>
