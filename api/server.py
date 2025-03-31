@@ -1,4 +1,3 @@
-
 """
 Denov Baraka Somsa REST API
 
