@@ -7,8 +7,8 @@ import { Order } from "@/hooks/use-cart";
 export async function sendTelegramNotification(order: Order) {
   try {
     // Replace these with your actual bot token and chat ID
-    const botToken = "8157470158:AAFePV804kLO3eqMM4yuJ9UDPYXg92MszM0";
-    const chatId = "955988843";
+    const botToken = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y";
+    const chatId = "-1002481535077";
     
     // Format message
     const items = order.items.map(item => 
@@ -70,8 +70,8 @@ ${items}
 export async function updateOrderStatusViaTelegram(orderId: string, status: string) {
   try {
     // Replace with your actual bot token and chat ID
-    const botToken = "8157470158:AAFePV804kLO3eqMM4yuJ9UDPYXg92MszM0";
-    const chatId = "955988843";
+    const botToken = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y";
+    const chatId = "-1002481535077";
     
     const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
     
@@ -118,8 +118,8 @@ export async function updateOrderStatusViaTelegram(orderId: string, status: stri
 export async function sendProductUpdateToTelegram(action: 'add' | 'edit' | 'delete', product: { id: string, name: string, price: number }) {
   try {
     // Replace with your actual bot token and chat ID
-    const botToken = "8157470158:AAFePV804kLO3eqMM4yuJ9UDPYXg92MszM0";
-    const chatId = "955988843";
+    const botToken = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y";
+    const chatId = "-1002481535077";
     
     const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
     

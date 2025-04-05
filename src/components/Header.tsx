@@ -33,10 +33,10 @@ const Header = ({ onSearch }: HeaderProps) => {
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] sm:w-[400px]">
               <nav className="flex flex-col gap-4 mt-8">
-                <a href="#" className="text-lg font-medium hover:text-primary">Главная</a>
-                <a href="#" className="text-lg font-medium hover:text-primary">Меню</a>
-                <a href="#" className="text-lg font-medium hover:text-primary">О нас</a>
-                <a href="#" className="text-lg font-medium hover:text-primary">Контакты</a>
+                <a href="#" className="text-lg font-medium hover:text-primary">Bosh sahifa</a>
+                <a href="#" className="text-lg font-medium hover:text-primary">Menyu</a>
+                <a href="#" className="text-lg font-medium hover:text-primary">Biz haqimizda</a>
+                <a href="#" className="text-lg font-medium hover:text-primary">Kontaktlar</a>
               </nav>
             </SheetContent>
           </Sheet>
@@ -97,7 +97,7 @@ const Header = ({ onSearch }: HeaderProps) => {
             <SheetContent side="right" className="w-[350px] sm:w-[450px]">
               <div className="py-6">
                 <h2 className="text-2xl font-bold">Корзина</h2>
-                <p className="text-muted-foreground">Ваш заказ</p>
+                <p className="text-muted-foreground">Sizning buyurtmangiz</p>
               </div>
               <div id="cart-items" className="space-y-4">
                 {/* Cart items will be rendered here by the CartSheet component */}

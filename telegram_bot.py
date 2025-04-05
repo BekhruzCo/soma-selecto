@@ -32,16 +32,16 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 # Bot token from @BotFather
-BOT_TOKEN = os.getenv("BOT_TOKEN", "8157470158:AAFePV804kLO3eqMM4yuJ9UDPYXg92MszM0")
+BOT_TOKEN = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y"
 
 # Channel/group ID where orders will be sent
-CHANNEL_ID = os.getenv("CHANNEL_ID", "955988843")
+CHANNEL_ID = "-1002388351836"
 
 # REST API URL
-API_URL = os.getenv("API_URL", "http://localhost:8000")
+API_URL = "http://localhost:8000"
 
 # Admin IDs who can access admin commands
-ADMIN_IDS = [int(id) for id in os.getenv("ADMIN_IDS", "").split(",") if id]
+ADMIN_IDS = [int(id) for id in "5846982343".split(",") if id]
 
 # Main router
 router = Router()

@@ -35,22 +35,22 @@ const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   switch (status) {
     case "processing":
       variant = "outline";
-      label = "В обработке";
+      label = "Qayta ishlashda";
       className = "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-900";
       break;
     case "delivering":
       variant = "outline";
-      label = "Доставляется";
+      label = "Yetkazib berildi";
       className = "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900";
       break;
     case "completed":
       variant = "outline";
-      label = "Доставлено";
+      label = "Yetkazib berildi";
       className = "bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900";
       break;
     case "cancelled":
       variant = "outline";
-      label = "Отменен";
+      label = "Bekor qilingan";
       className = "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900";
       break;
   }
@@ -75,15 +75,15 @@ const OrderStatus = () => {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <ClipboardList className="h-4 w-4" />
-          <span>Мои заказы</span>
+          <span>Mening buyurtmalarim</span>
           <Badge variant="secondary" className="ml-1">{orders.length}</Badge>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>История заказов</DialogTitle>
+          <DialogTitle>Buyurtma tarixi</DialogTitle>
           <DialogDescription>
-            Просмотр статуса ваших заказов
+          Buyurtmalaringiz holatini ko'ring
           </DialogDescription>
         </DialogHeader>
 
@@ -116,23 +116,23 @@ const OrderStatus = () => {
                 
                 <div className="flex flex-col border-t pt-2 mt-2">
                   <div className="flex justify-between text-sm">
-                    <span>Сумма заказа:</span>
+                    <span>Buyurtma narxi</span>
                     <span className="font-medium">{order.total.toLocaleString()} сум</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Доставка:</span>
+                    <span>Yetkazib berish:</span>
                     <span className={order.freeDelivery ? "text-green-600 dark:text-green-400 font-medium" : "font-medium"}>
                       {order.freeDelivery ? "Бесплатно" : "15,000 сум"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm font-medium mt-1">
-                    <span>Итого:</span>
+                    <span>Jami:</span>
                     <span>{totalWithDelivery.toLocaleString()} сум</span>
                   </div>
                 </div>
                 
                 <div className="text-sm text-muted-foreground">
-                  <span>Адрес: {order.customer.address}</span>
+                  <span>Manzil: {order.customer.address}</span>
                 </div>
               </div>
             );

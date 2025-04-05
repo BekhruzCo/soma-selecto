@@ -56,8 +56,8 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
   const handleAddToCart = () => {
     addItem(product);
     toast({
-      title: "Добавлено в корзину",
-      description: `${product.name} добавлен в вашу корзину`,
+      title: "Savatga qo'shildi",
+      description: `${product.name} savatingizga qo'shildi`,
       duration: 2000,
     });
   };
@@ -102,8 +102,8 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
       });
       
       toast({
-        title: "Товар обновлен",
-        description: `${name} успешно обновлен`,
+        title: "Mahsulot yangilandi",
+        description: `${name} muvaffaqiyatli yangilandi`,
         duration: 3000,
       });
       
@@ -115,8 +115,8 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
     } catch (error) {
       console.error("Error updating product:", error);
       toast({
-        title: "Ошибка",
-        description: "Не удалось обновить товар. Попробуйте еще раз.",
+        title: "Xatolik",
+        description: "Mahsulotni yangilab bo‘lmadi. Qayta urinib ko'ring.",
         variant: "destructive",
         duration: 3000,
       });
@@ -136,6 +136,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
           <div className="overflow-hidden">
             <img 
               src={product.image || "/placeholder.svg"} 
+              // src="../../dist/classic_somsa.jpg"
               alt={product.name} 
               className="product-img w-full h-48 object-cover transition-transform duration-500 hover:scale-110" 
             />
@@ -328,7 +329,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
                 Отмена
               </Button>
               <Button type="submit" disabled={isUpdating}>
-                {isUpdating ? "Сохранение..." : "Сохранить изменения"}
+                {isUpdating ? "Saqlanmoqda..." : "O'zgarishlarni saqlang"}
               </Button>
             </DialogFooter>
           </form>

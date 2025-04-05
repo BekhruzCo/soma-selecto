@@ -8,32 +8,32 @@ const Hero = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           <div className="text-left">
             <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-              Лучшая <span className="text-primary">Сомса</span> в городе!
+            Eng zo'r <span className="text-primary">Somsa</span> shaharda!
             </h1>
             <p className="text-xl text-muted-foreground mb-6">
-              Свежая, горячая и невероятно вкусная сомса по традиционным рецептам. 
-              Готовим с любовью, выбираем лучшие ингредиенты.
+            An'anaviy retseptlar bo'yicha tayyorlangan yangi, issiq va ajoyib mazali somsa.
+            Biz eng yaxshi ingredientlarni tanlab, sevgi bilan pishiramiz.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button size="lg" className="font-medium">
-                Заказать сейчас
+              Hoziroq buyurtma bering
               </Button>
               <Button size="lg" variant="outline" className="font-medium">
-                Наше меню
+              Bizning menyu
               </Button>
             </div>
             <div className="mt-8 grid grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary">15+</div>
-                <div className="text-sm text-muted-foreground">Видов сомсы</div>
+                <div className="text-sm text-muted-foreground">Somsa turlari</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary">30</div>
-                <div className="text-sm text-muted-foreground">Минут доставка</div>
+                <div className="text-sm text-muted-foreground">Bir necha daqiqada yetkazib berish</div>
               </div>
               <div className="text-center">
                 <div className="text-3xl font-bold text-primary">5000+</div>
-                <div className="text-sm text-muted-foreground">Довольных клиентов</div>
+                <div className="text-sm text-muted-foreground">Qoniqarli mijozlar</div>
               </div>
             </div>
           </div>
