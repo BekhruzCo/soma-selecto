@@ -1,4 +1,3 @@
-
 import { Order } from "@/hooks/use-cart";
 
 /**
@@ -19,18 +18,18 @@ export async function sendTelegramNotification(order: Order) {
     const totalWithDelivery = order.total + (order.freeDelivery ? 0 : deliveryCost);
     
     const message = `
-🆕 Новый заказ #${order.id.slice(-5)}!
+🆕 Yangi buyurtma #${order.id.slice(-5)}!
 
-👤 Клиент: ${order.customer.name}
-📞 Телефон: ${order.customer.phone}
-🏠 Адрес: ${order.customer.address}
+👤 Mijoz: ${order.customer.name}
+📞 Telefon: ${order.customer.phone}
+🏠 Manzil: ${order.customer.address}
 
-🛒 Товары:
+🛒 Mahsulotlar:
 ${items}
 
-💰 Сумма товаров: ${order.total.toLocaleString()} сум
-🚚 Доставка: ${order.freeDelivery ? 'Бесплатно' : '15,000 сум'}
-💵 Итого: ${totalWithDelivery.toLocaleString()} сум
+💰 Mahsulotlar narxi: ${order.total.toLocaleString()} so'm
+🚚 Yetkazib berish: ${order.freeDelivery ? 'Bepul' : '10,000 so\'m'}
+💵 Jami: ${totalWithDelivery.toLocaleString()} so'm
 `;
 
     // Send message via Telegram API
@@ -76,13 +75,13 @@ export async function updateOrderStatusViaTelegram(orderId: string, status: stri
     const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
     
     const statusMessages = {
-      "processing": "принят в обработку",
-      "delivering": "передан в доставку",
-      "completed": "доставлен",
-      "cancelled": "отменен"
+      "processing": "qabul qilindi",
+      "delivering": "yetkazib berilmoqda",
+      "completed": "yetkazib berildi",
+      "cancelled": "bekor qilindi"
     };
     
-    const message = `Статус заказа #${orderId.slice(-5)} изменен: ${statusMessages[status as keyof typeof statusMessages]}`;
+    const message = `Buyurtma #${orderId.slice(-5)} holati o'zgartirildi: ${statusMessages[status as keyof typeof statusMessages]}`;
     
     const response = await fetch(telegramApiUrl, {
       method: 'POST',
@@ -124,12 +123,12 @@ export async function sendProductUpdateToTelegram(action: 'add' | 'edit' | 'dele
     const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
     
     const actionMessages = {
-      "add": "добавлен",
-      "edit": "изменен",
-      "delete": "удален"
+      "add": "qo'shildi",
+      "edit": "o'zgartirildi",
+      "delete": "o'chirildi"
     };
     
-    const message = `🔄 Товар #${product.id} ${actionMessages[action]}: ${product.name} (${product.price.toLocaleString()} сум)`;
+    const message = `🔄 Mahsulot #${product.id} ${actionMessages[action]}: ${product.name} (${product.price.toLocaleString()} so'm)`;
     
     const response = await fetch(telegramApiUrl, {
       method: 'POST',

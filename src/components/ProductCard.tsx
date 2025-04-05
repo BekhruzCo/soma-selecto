@@ -1,4 +1,3 @@
-
 import { Product } from "@/data/products";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -143,7 +142,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
           </div>
           {product.popular && (
             <Badge className="absolute top-2 right-2 bg-accent">
-              Популярное
+              Mashhur
             </Badge>
           )}
           {adminMode && (
@@ -179,7 +178,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
               className="w-full"
             >
               <Edit className="mr-2 h-4 w-4" />
-              Редактировать
+              Tahrirlash
             </Button>
           ) : cartItem ? (
             <div className="flex items-center w-full justify-between">
@@ -207,7 +206,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
               variant={isHovered ? "default" : "outline"}
             >
               <ShoppingCart className="mr-2 h-4 w-4" />
-              В корзину
+              Savatga qo'shish
             </Button>
           )}
         </CardFooter>
@@ -217,15 +216,15 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
         <DialogContent className="sm:max-w-[525px]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>Редактировать товар</DialogTitle>
+              <DialogTitle>Mahsulotni tahrirlash</DialogTitle>
               <DialogDescription>
-                Внесите изменения в информацию о товаре. Нажмите сохранить, когда закончите.
+                Mahsulot ma'lumotlariga o'zgartirish kiriting. Tugatganingizdan so'ng saqlashni bosing.
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
-                  Название
+                  Nomi
                 </Label>
                 <Input
                   id="name"
@@ -237,7 +236,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right">
-                  Описание
+                  Tavsifi
                 </Label>
                 <Textarea
                   id="description"
@@ -250,7 +249,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="price" className="text-right">
-                  Цена
+                  Narxi
                 </Label>
                 <Input
                   id="price"
@@ -263,7 +262,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="category" className="text-right">
-                  Категория
+                  Kategoriya
                 </Label>
                 <div className="col-span-3">
                   <Select 
@@ -274,17 +273,17 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
                       <SelectValue placeholder="Выберите категорию" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="classic">Классическая</SelectItem>
-                      <SelectItem value="meat">Мясная</SelectItem>
-                      <SelectItem value="vegetable">Овощная</SelectItem>
-                      <SelectItem value="special">Особая</SelectItem>
+                      <SelectItem value="classic">Klassik</SelectItem>
+                      <SelectItem value="meat">Go'shtli</SelectItem>
+                      <SelectItem value="vegetable">Sabzavotli</SelectItem>
+                      <SelectItem value="special">Maxsus</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="popular" className="text-right">
-                  Популярное
+                  Mashhur
                 </Label>
                 <div className="flex items-center space-x-2 col-span-3">
                   <Switch 
@@ -299,7 +298,7 @@ const ProductCard = ({ product, adminMode = false, onProductUpdated }: ProductCa
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="image" className="text-right">
-                  Изображение
+                  Rasm
                 </Label>
                 <div className="col-span-3">
                   <Input

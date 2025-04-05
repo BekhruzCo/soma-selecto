@@ -1,4 +1,3 @@
-
 import { 
   SheetDescription, 
   SheetHeader, 
@@ -67,9 +66,9 @@ const CartSheet = () => {
     return (
       <>
         <SheetHeader>
-          <SheetTitle>Корзина пуста</SheetTitle>
+          <SheetTitle>Savat bo'sh</SheetTitle>
           <SheetDescription>
-            Добавьте товары в корзину, чтобы оформить заказ
+            Buyurtma berish uchun savatga mahsulotlar qo'shing
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-col items-center justify-center h-[60vh]">
@@ -81,7 +80,7 @@ const CartSheet = () => {
             </svg>
           </div>
           <p className="text-muted-foreground text-center">
-            Ваша корзина пуста. Добавьте вкусную сомсу из нашего меню!
+            Savatingiz bo'sh. Menudagi mazali somsalardan qo'shing!
           </p>
         </div>
       </>
@@ -93,10 +92,9 @@ const CartSheet = () => {
   return (
     <>
       <SheetHeader>
-        <SheetTitle>Ваша корзина</SheetTitle>
+        <SheetTitle>Sizning savatingiz</SheetTitle>
         <SheetDescription>
-          {items.length} {items.length === 1 ? 'товар' : 
-            items.length < 5 ? 'товара' : 'товаров'} в корзине
+          Savatda {items.length} ta mahsulot
         </SheetDescription>
       </SheetHeader>
       
@@ -104,7 +102,7 @@ const CartSheet = () => {
         <Alert className="mt-4 bg-muted/50">
           <Truck className="h-4 w-4" />
           <AlertDescription>
-            Добавьте товаров еще на {remainingForFreeDelivery.toLocaleString()} сум для бесплатной доставки
+            Bepul yetkazib berish uchun yana {remainingForFreeDelivery.toLocaleString()} so'mlik mahsulot qo'shing
           </AlertDescription>
         </Alert>
       )}
@@ -113,7 +111,7 @@ const CartSheet = () => {
         <Alert className="mt-4 bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900">
           <Truck className="h-4 w-4" />
           <AlertDescription>
-            Вы получили бесплатную доставку!
+            Sizga bepul yetkazib berish xizmati taqdim etiladi!
           </AlertDescription>
         </Alert>
       )}
@@ -177,37 +175,37 @@ const CartSheet = () => {
       <div className="space-y-4 pt-4">
         <div className="space-y-1.5">
           <div className="flex items-center justify-between text-sm">
-            <span>Сумма заказа:</span>
-            <span className="font-medium">{cartTotal.toLocaleString()} сум</span>
+            <span>Buyurtma summasi:</span>
+            <span className="font-medium">{cartTotal.toLocaleString()} so'm</span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span>Доставка:</span>
+            <span>Yetkazib berish:</span>
             <span className={hasQualifiedForFreeDelivery ? "text-green-600 dark:text-green-400 font-medium" : "font-medium"}>
-              {hasQualifiedForFreeDelivery ? "Бесплатно" : `${deliveryCost.toLocaleString()} сум`}
+              {hasQualifiedForFreeDelivery ? "Bepul" : `${deliveryCost.toLocaleString()} so'm`}
             </span>
           </div>
           <div className="flex items-center justify-between font-medium pt-1.5">
-            <span>Итого:</span>
-            <span className="text-xl">{totalWithDelivery.toLocaleString()} сум</span>
+            <span>Jami:</span>
+            <span className="text-xl">{totalWithDelivery.toLocaleString()} so'm</span>
           </div>
         </div>
         
         <Dialog open={orderDialogOpen} onOpenChange={setOrderDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full">Оформить заказ</Button>
+            <Button className="w-full">Buyurtma berish</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Оформление заказа</DialogTitle>
+              <DialogTitle>Buyurtma rasmiylashtirish</DialogTitle>
               <DialogDescription>
-                Заполните информацию для доставки
+                Yetkazib berish uchun ma'lumotlarni to'ldiring
               </DialogDescription>
             </DialogHeader>
             
             <form onSubmit={handleSubmitOrder}>
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="name">Имя</Label>
+                  <Label htmlFor="name">Ism</Label>
                   <Input
                     id="name"
                     name="name"
@@ -218,7 +216,7 @@ const CartSheet = () => {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="phone">Телефон</Label>
+                  <Label htmlFor="phone">Telefon</Label>
                   <Input
                     id="phone"
                     name="phone"
@@ -230,7 +228,7 @@ const CartSheet = () => {
                 </div>
                 
                 <div className="grid gap-2">
-                  <Label htmlFor="address">Адрес доставки</Label>
+                  <Label htmlFor="address">Yetkazib berish manzili</Label>
                   <Input
                     id="address"
                     name="address"
@@ -247,16 +245,16 @@ const CartSheet = () => {
                   variant="outline"
                   onClick={() => setOrderDialogOpen(false)}
                 >
-                  Отмена
+                  Bekor qilish
                 </Button>
-                <Button type="submit">Подтвердить заказ</Button>
+                <Button type="submit">Buyurtmani tasdiqlash</Button>
               </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
         
         <Button variant="outline" className="w-full" onClick={clearCart}>
-          Очистить корзину
+          Savatni tozalash
         </Button>
       </div>
     </>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -11,9 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  // For simplicity, we're using a hardcoded password
-  // In a real application, you should use proper authentication
-  const adminPassword = "admin123";
+  const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,14 +18,14 @@ const Login = () => {
     if (password === adminPassword) {
       localStorage.setItem("admin_authenticated", "true");
       toast({
-        title: "Успешный вход",
-        description: "Вы вошли в панель администратора",
+        title: "Muvaffaqiyatli kirish",
+        description: "Siz admin paneliga kirdingiz",
       });
       navigate("/admin");
     } else {
       toast({
-        title: "Ошибка входа",
-        description: "Неверный пароль",
+        title: "Xatolik yuz berdi",
+        description: "Noto'g'ri parol",
         variant: "destructive",
       });
     }
@@ -38,16 +35,16 @@ const Login = () => {
     <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Вход в панель администратора</CardTitle>
+          <CardTitle>Admin paneliga kirish</CardTitle>
           <CardDescription>
-            Введите пароль, чтобы получить доступ к панели администратора
+            Admin paneliga kirish uchun parolni kiriting
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent>
             <div className="grid gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="password">Пароль</Label>
+                <Label htmlFor="password">Parol</Label>
                 <Input
                   id="password"
                   type="password"
@@ -59,7 +56,7 @@ const Login = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">Войти</Button>
+            <Button type="submit" className="w-full">Kirish</Button>
           </CardFooter>
         </form>
       </Card>

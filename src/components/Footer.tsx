@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {
@@ -9,13 +8,13 @@ const Footer = () => {
           <div>
             <h3 className="text-xl font-bold mb-4">Denov Baraka</h3>
             <p className="text-muted-foreground">
-              Вкуснейшая сомса по традиционным рецептам Узбекистана. 
-              Готовим с любовью, доставляем быстро!
+              O'zbekistonning an'anaviy retseptlari bo'yicha tayyorlangan eng mazali somsa. 
+              Sevgi bilan pishiramiz, tez yetkazib beramiz!
             </p>
           </div>
           
           <div>
-            <h3 className="text-xl font-bold mb-4">Контакты</h3>
+            <h3 className="text-xl font-bold mb-4">Aloqa</h3>
             <div className="space-y-2">
               <p className="flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -35,33 +34,33 @@ const Footer = () => {
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
-                г. Ташкент, ул. Амира Темура, 105
+                Toshkent sh., Amir Temur ko'chasi, 105
               </p>
             </div>
           </div>
           
           <div>
-            <h3 className="text-xl font-bold mb-4">Часы работы</h3>
+            <h3 className="text-xl font-bold mb-4">Ish vaqti</h3>
             <ul className="space-y-2">
               <li className="flex justify-between">
-                <span>Понедельник - Пятница:</span>
+                <span>Dushanbadan - Jumagacha:</span>
                 <span>9:00 - 22:00</span>
               </li>
               <li className="flex justify-between">
-                <span>Суббота - Воскресенье:</span>
+                <span>Shanba - Yakshanba:</span>
                 <span>10:00 - 23:00</span>
               </li>
             </ul>
             
             <div className="mt-4">
-              <Button className="w-full">Заказать звонок</Button>
+              <Button className="w-full">Qo'ng'iroq buyurtma qilish</Button>
             </div>
           </div>
         </div>
         
         <div className="mt-8 pt-8 border-t border-border text-center">
           <p className="text-muted-foreground">
-            © {new Date().getFullYear()} Denov Baraka. Все права защищены.
+            © {new Date().getFullYear()} Denov Baraka. Barcha huquqlar himoyalangan.
           </p>
         </div>
       </div>

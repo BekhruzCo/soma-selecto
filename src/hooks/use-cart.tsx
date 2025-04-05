@@ -54,7 +54,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const freeDeliveryThreshold = 100000;
-  const deliveryCost = 15000;
+  const deliveryCost = 10000;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -158,8 +158,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart();
       
       toast({
-        title: "Заказ оформлен",
-        description: "Ваш заказ успешно оформлен и передан в обработку",
+        title: "Buyurtma berildi",
+        description: "Buyurtmangiz muvaffaqiyatli joylashtirildi va qayta ishlashga yuborildi.",
         duration: 5000,
       });
       
@@ -178,8 +178,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       clearCart();
       
       toast({
-        title: "Заказ оформлен",
-        description: "Ваш заказ принят, но возникли проблемы с соединением. Мы свяжемся с вами для подтверждения.",
+        title: "Buyurtma berildi",
+        description: "Buyurtmangiz qabul qilindi, lekin ulanishda muammo yuz berdi. Tasdiqlash uchun siz bilan bog'lanamiz.",
         duration: 5000,
       });
     }
@@ -204,15 +204,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
       
       // Show toast notification
       const statusMessages = {
-        "processing": "принят в обработку",
-        "delivering": "передан в доставку",
-        "completed": "доставлен",
-        "cancelled": "отменен"
+        "processing": "qayta ishlashda",
+        "delivering": "yetkazib berishga yuborildi",
+        "completed": "yetkazildi",
+        "cancelled": "bekor qilindi"      
       };
       
       toast({
-        title: "Статус заказа обновлен",
-        description: `Заказ #${orderId.slice(-5)} ${statusMessages[status]}`,
+        title: "Buyurtma holati yangilandi",
+        description: `Buyurtma #${orderId.slice(-5)} ${statusMessages[status]}`,
         duration: 3000,
       });
       
@@ -236,8 +236,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       }
       
       toast({
-        title: "Статус заказа обновлен",
-        description: "Статус обновлен локально, но возникли проблемы с синхронизацией",
+        title: "Buyurtma holati yangilandi",
+        description: "Holat mahalliy sifatida yangilandi, lekin sinxronlashda muammolar bor.",
         variant: "destructive",
         duration: 3000,
       });

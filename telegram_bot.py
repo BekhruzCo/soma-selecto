@@ -1,4 +1,3 @@
-
 """
 Telegram Bot for Denov Baraka Somsa
 
@@ -59,14 +58,14 @@ class ProductStates(StatesGroup):
 def get_order_keyboard(order_id):
     keyboard = [
         [
-            InlineKeyboardButton(text="✅ Принять", callback_data=f"accept_{order_id}"),
+            InlineKeyboardButton(text="✅ Qabul qilish", callback_data=f"accept_{order_id}"),
         ],
         [
-            InlineKeyboardButton(text="🚚 Доставка", callback_data=f"deliver_{order_id}"),
-            InlineKeyboardButton(text="✓ Завершить", callback_data=f"complete_{order_id}")
+            InlineKeyboardButton(text="🚚 Yetkazish", callback_data=f"deliver_{order_id}"),
+            InlineKeyboardButton(text="✓ Yakunlash", callback_data=f"complete_{order_id}")
         ],
         [
-            InlineKeyboardButton(text="❌ Отменить", callback_data=f"cancel_{order_id}")
+            InlineKeyboardButton(text="❌ Bekor qilish", callback_data=f"cancel_{order_id}")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -75,12 +74,12 @@ def get_order_keyboard(order_id):
 def get_admin_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton(text="📊 Заказы", callback_data="admin_orders"),
-            InlineKeyboardButton(text="🛒 Товары", callback_data="admin_products")
+            InlineKeyboardButton(text="📊 Buyurtmalar", callback_data="admin_orders"),
+            InlineKeyboardButton(text="🛒 Mahsulotlar", callback_data="admin_products")
         ],
         [
-            InlineKeyboardButton(text="➕ Добавить товар", callback_data="add_product"),
-            InlineKeyboardButton(text="📈 Статистика", callback_data="admin_stats")
+            InlineKeyboardButton(text="➕ Mahsulot qo'shish", callback_data="add_product"),
+            InlineKeyboardButton(text="📈 Statistika", callback_data="admin_stats")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -89,12 +88,12 @@ def get_admin_keyboard():
 def get_category_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton(text="Классическая", callback_data="cat_classic"),
-            InlineKeyboardButton(text="Мясная", callback_data="cat_meat")
+            InlineKeyboardButton(text="Klassik", callback_data="cat_classic"),
+            InlineKeyboardButton(text="Go'shtli", callback_data="cat_meat")
         ],
         [
-            InlineKeyboardButton(text="Овощная", callback_data="cat_vegetable"),
-            InlineKeyboardButton(text="Особая", callback_data="cat_special")
+            InlineKeyboardButton(text="Sabzavotli", callback_data="cat_vegetable"),
+            InlineKeyboardButton(text="Maxsus", callback_data="cat_special")
         ]
     ]
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -137,14 +136,14 @@ def update_order_status_api(order_id, status):
 async def cmd_start(message: types.Message):
     if message.from_user.id in ADMIN_IDS:
         await message.answer(
-            "Привет, администратор! Я бот для управления заказами Denov Baraka Somsa. "
-            "Используйте команду /admin для доступа к панели администратора.",
+            "Salom, administrator! Men Denov Baraka Somsa buyurtmalarini boshqarish botiman. "
+            "Administrator paneliga kirish uchun /admin buyrug'ini ishlatishingiz mumkin.",
             reply_markup=get_admin_keyboard()
         )
     else:
         await message.answer(
-            "Привет! Я бот Denov Baraka Somsa. "
-            "Вы можете оформить заказ на нашем сайте и отслеживать его статус здесь."
+            "Salom! Men Denov Baraka Somsa botiman. "
+            "Siz bizning veb-saytimizda buyurtma berishingiz va bu yerda uning holatini kuzatishingiz mumkin."
         )
 
 # Admin command handler
@@ -152,35 +151,35 @@ async def cmd_start(message: types.Message):
 async def cmd_admin(message: types.Message):
     if message.from_user.id in ADMIN_IDS:
         await message.answer(
-            "Панель администратора Denov Baraka Somsa",
+            "Denov Baraka Somsa administrator paneli",
             reply_markup=get_admin_keyboard()
         )
     else:
-        await message.answer("У вас нет доступа к панели администратора.")
+        await message.answer("Sizda administrator paneliga kirish huquqi yo'q.")
 
 # Help command handler
 @router.message(Command("help"))
 async def cmd_help(message: types.Message):
     if message.from_user.id in ADMIN_IDS:
         help_text = """
-Доступные команды для администратора:
-/start - Начать работу с ботом
-/admin - Открыть панель администратора
-/help - Показать эту справку
-/orders - Показать активные заказы
-/products - Показать список товаров
-/stats - Показать статистику заказов
+Administrator uchun mavjud buyruqlar:
+/start - Bot bilan ishlashni boshlash
+/admin - Administrator panelini ochish
+/help - Ushbu ma'lumotni ko'rsatish
+/orders - Faol buyurtmalarni ko'rsatish
+/products - Mahsulotlar ro'yxatini ko'rsatish
+/stats - Buyurtmalar statistikasini ko'rsatish
 
-Вы также можете управлять заказами и товарами через панель администратора.
+Siz administrator paneli orqali buyurtmalar va mahsulotlarni boshqarishingiz mumkin.
 """
     else:
         help_text = """
-Доступные команды:
-/start - Начать работу с ботом
-/help - Показать эту справку
-/status [номер заказа] - Проверить статус заказа
+Mavjud buyruqlar:
+/start - Bot bilan ishlashni boshlash
+/help - Ushbu ma'lumotni ko'rsatish
+/status [buyurtma raqami] - Buyurtma holatini tekshirish
 
-Оформить заказ можно на нашем сайте.
+Buyurtma berish uchun veb-saytimizga tashrif buyuring.
 """
     await message.answer(help_text)
 
@@ -317,10 +316,10 @@ async def cmd_status(message: types.Message):
 # Helper function to get status text
 def get_status_text(status):
     status_map = {
-        "processing": "В обработке",
-        "delivering": "Доставляется",
-        "completed": "Доставлено",
-        "cancelled": "Отменен"
+        "processing": "Qabul qilingan",
+        "delivering": "Yetkazilmoqda",
+        "completed": "Yetkazildi",
+        "cancelled": "Bekor qilindi"
     }
     return status_map.get(status, status)
 
@@ -331,20 +330,20 @@ async def add_product_start(callback: types.CallbackQuery, state: FSMContext):
         await callback.answer("У вас нет доступа к этой функции.")
         return
         
-    await callback.message.answer("Введите название товара:")
+    await callback.message.answer("Mahsulot nomini kiriting:")
     await state.set_state(ProductStates.waiting_for_name)
     await callback.answer()
 
 @router.message(ProductStates.waiting_for_name)
 async def process_name(message: types.Message, state: FSMContext):
     await state.update_data(name=message.text)
-    await message.answer("Введите описание товара:")
+    await message.answer("Mahsulot tavsifini kiriting:")
     await state.set_state(ProductStates.waiting_for_description)
 
 @router.message(ProductStates.waiting_for_description)
 async def process_description(message: types.Message, state: FSMContext):
     await state.update_data(description=message.text)
-    await message.answer("Введите цену товара (только число):")
+    await message.answer("Mahsulot narxini kiriting (faqat son):")
     await state.set_state(ProductStates.waiting_for_price)
 
 @router.message(ProductStates.waiting_for_price)
@@ -352,25 +351,25 @@ async def process_price(message: types.Message, state: FSMContext):
     try:
         price = float(message.text)
         await state.update_data(price=price)
-        await message.answer("Выберите категорию товара:", 
+        await message.answer("Mahsulot kategoriyasini tanlang:", 
                            reply_markup=get_category_keyboard())
         await state.set_state(ProductStates.waiting_for_category)
     except ValueError:
-        await message.answer("Пожалуйста, введите корректную цену (только число):")
+        await message.answer("Iltimos, to'g'ri narxni kiriting (faqat son):")
 
 @router.callback_query(lambda c: c.data.startswith("cat_"))
 async def process_category_selection(callback: types.CallbackQuery, state: FSMContext):
     category = callback.data.split("_")[1]
     category_names = {
-        "classic": "Классическая",
-        "meat": "Мясная", 
-        "vegetable": "Овощная",
-        "special": "Особая"
+        "classic": "Klassik",
+        "meat": "Go'shtli", 
+        "vegetable": "Sabzavotli",
+        "special": "Maxsus"
     }
     
     await state.update_data(category=category)
-    await callback.message.answer(f"Выбрана категория: {category_names.get(category, category)}")
-    await callback.message.answer("Пришлите изображение товара (или отправьте 'пропустить' чтобы пропустить этот шаг):")
+    await callback.message.answer(f"Tanlangan kategoriya: {category_names.get(category, category)}")
+    await callback.message.answer("Mahsulot rasmini yuboring (yoki o'tkazib yuborish uchun 'o'tkazish' so'zini yuboring):")
     await state.set_state(ProductStates.waiting_for_image)
     await callback.answer()
 
@@ -386,7 +385,7 @@ async def process_category_text(message: types.Message, state: FSMContext):
     
     category = category_map.get(message.text.lower(), message.text.lower())
     await state.update_data(category=category)
-    await message.answer("Пришлите изображение товара (или отправьте 'пропустить' чтобы пропустить этот шаг):")
+    await message.answer("Mahsulot rasmini yuboring (yoki o'tkazib yuborish uchun 'o'tkazish' so'zini yuboring):")
     await state.set_state(ProductStates.waiting_for_image)
 
 @router.message(ProductStates.waiting_for_image)
@@ -404,19 +403,19 @@ async def process_image(message: types.Message, state: FSMContext):
         await state.update_data(image=file_path)
         
         # Ask if product is popular
-        await message.answer("Это популярный товар? (да/нет):")
+        await message.answer("Bu mashhur mahsulotmi? (ha/yo'q):")
         await state.set_state(ProductStates.waiting_for_popular)
-    elif message.text and message.text.lower() == "пропустить":
+    elif message.text and message.text.lower() == "o'tkazish":
         await state.update_data(image=None)
         # Ask if product is popular
-        await message.answer("Это популярный товар? (да/нет):")
+        await message.answer("Bu mashhur mahsulotmi? (ha/yo'q):")
         await state.set_state(ProductStates.waiting_for_popular)
     else:
-        await message.answer("Это не изображение. Пришлите изображение или отправьте 'пропустить':")
+        await message.answer("Bu rasm emas. Rasm yuboring yoki 'o'tkazish' so'zini yuboring:")
 
 @router.message(ProductStates.waiting_for_popular)
 async def process_popular(message: types.Message, state: FSMContext):
-    popular = message.text.lower() in ["да", "yes", "y", "true", "1"]
+    popular = message.text.lower() in ["ha", "yes", "y", "true", "1"]
     data = await state.get_data()
     
     # Prepare the product data
@@ -454,7 +453,7 @@ async def process_popular(message: types.Message, state: FSMContext):
             
         except Exception as e:
             logging.error(f"Error uploading product with image: {e}")
-            await message.answer(f"Ошибка при загрузке товара: {e}")
+            await message.answer(f"Mahsulotni yuklashda xatolik: {e}")
             await state.clear()
             return
     else:
@@ -463,7 +462,7 @@ async def process_popular(message: types.Message, state: FSMContext):
             response = requests.post(f"{API_URL}/products", data=product_data)
         except Exception as e:
             logging.error(f"Error uploading product: {e}")
-            await message.answer(f"Ошибка при загрузке товара: {e}")
+            await message.answer(f"Mahsulotni yuklashda xatolik: {e}")
             await state.clear()
             return
     
@@ -471,7 +470,7 @@ async def process_popular(message: types.Message, state: FSMContext):
     if response.status_code == 200:
         new_product = response.json()
         
-        success_message = f"Товар '{data['name']}' успешно добавлен!"
+        success_message = f"Mahsulot '{data['name']}' muvaffaqiyatli qo'shildi!"
         
         # If the product has an image, send it with confirmation
         if new_product.get("image"):
@@ -487,7 +486,7 @@ async def process_popular(message: types.Message, state: FSMContext):
         else:
             await message.answer(success_message)
     else:
-        await message.answer(f"Ошибка при добавлении товара: {response.text}")
+        await message.answer(f"Mahsulotni qo'shishda xatolik: {response.text}")
     
     await state.clear()
 
@@ -522,29 +521,29 @@ async def order_actions(callback: types.CallbackQuery):
         
         if result:
             status_text_mapping = {
-                "processing": "принят в обработку",
-                "delivering": "передан в доставку",
-                "completed": "доставлен",
-                "cancelled": "отменен"
+                "processing": "qabul qilindi",
+                "delivering": "yetkazilmoqda",
+                "completed": "yetkazildi",
+                "cancelled": "bekor qilindi"
             }
             
             status_text = status_text_mapping.get(status, status)
             
-            await callback.answer(f"Заказ #{order_id[-5:] if len(order_id) > 5 else order_id} {status_text}")
+            await callback.answer(f"Buyurtma #{order_id[-5:] if len(order_id) > 5 else order_id} {status_text}")
             
             # Update message text
             order = result.get("order", {})
             order_text = f"""
-Заказ #{order_id[-5:] if len(order_id) > 5 else order_id}
-Статус: {get_status_text(status)}
-Клиент: {order["customer"]["name"]}
-Телефон: {order["customer"]["phone"]}
-Адрес: {order["customer"]["address"]}
-Сумма: {order["total"]} сум
+Buyurtma #{order_id[-5:] if len(order_id) > 5 else order_id}
+Holat: {get_status_text(status)}
+Mijoz: {order["customer"]["name"]}
+Telefon: {order["customer"]["phone"]}
+Manzil: {order["customer"]["address"]}
+Jami: {order["total"]} so'm
 """
             await callback.message.edit_text(order_text, reply_markup=get_order_keyboard(order_id))
         else:
-            await callback.answer("Ошибка при обновлении статуса заказа.")
+            await callback.answer("Buyurtma holatini yangilashda xatolik.")
 
 # Callback query handler for admin menu
 @router.callback_query(lambda c: c.data.startswith("admin_"))
@@ -591,25 +590,25 @@ async def handle_webhook_data(message: types.Message):
         ])
         
         # Calculate delivery
-        delivery_text = "Бесплатно" if order_data.get("freeDelivery") else "15,000 сум"
+        delivery_text = "Bepul" if order_data.get("freeDelivery") else "15,000 so'm"
         total_with_delivery = order_data["total"]
         if not order_data.get("freeDelivery"):
             total_with_delivery += 15000
         
         # Format order message
         order_text = f"""
-🆕 Новый заказ #{order_id}!
+🆕 Yangi buyurtma #{order_id}!
 
-👤 Клиент: {order_data["customer"]["name"]}
-📞 Телефон: {order_data["customer"]["phone"]}
-🏠 Адрес: {order_data["customer"]["address"]}
+👤 Mijoz: {order_data["customer"]["name"]}
+📞 Telefon: {order_data["customer"]["phone"]}
+🏠 Manzil: {order_data["customer"]["address"]}
 
-🛒 Товары:
+🛒 Mahsulotlar:
 {items_text}
 
-💰 Сумма товаров: {order_data["total"]} сум
-🚚 Доставка: {delivery_text}
-💵 Итого: {total_with_delivery} сум
+💰 Mahsulotlar narxi: {order_data["total"]} so'm
+🚚 Yetkazib berish: {delivery_text}
+💵 Jami: {total_with_delivery} so'm
 """
         # Send to channel/group
         if CHANNEL_ID:
@@ -636,7 +635,7 @@ async def handle_webhook_data(message: types.Message):
             logging.error(f"Error saving order to API: {e}")
         
         # Reply to the webhook
-        await message.answer(f"Заказ #{order_id} принят.")
+        await message.answer(f"Buyurtma #{order_id} qabul qilindi.")
     
     except json.JSONDecodeError:
         # Not JSON data, ignore

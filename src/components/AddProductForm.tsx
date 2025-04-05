@@ -1,4 +1,3 @@
-
 import { useState, ChangeEvent } from "react";
 import { toast } from "@/hooks/use-toast";
 import { 
@@ -19,12 +18,12 @@ import { ImagePlus } from "lucide-react";
 
 // Product form schema
 const productFormSchema = z.object({
-  name: z.string().min(2, { message: "Название должно содержать минимум 2 символа" }),
-  description: z.string().min(5, { message: "Описание должно содержать минимум 5 символов" }),
+  name: z.string().min(2, { message: "Nom kamida 2 ta belgidan iborat bo'lishi kerak" }),
+  description: z.string().min(5, { message: "Tavsif kamida 5 ta belgidan iborat bo'lishi kerak" }),
   price: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
-    message: "Цена должна быть больше 0",
+    message: "Narx 0 dan katta bo'lishi kerak",
   }),
-  category: z.string({ required_error: "Выберите категорию" }),
+  category: z.string({ required_error: "Kategoriyani tanlang" }),
 });
 
 type ProductFormValues = z.infer<typeof productFormSchema>;
@@ -51,8 +50,8 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
       // Check file size (max 2MB)
       if (file.size > 2 * 1024 * 1024) {
         toast({
-          title: "Ошибка загрузки",
-          description: "Размер файла не должен превышать 2MB",
+          title: "Yuklash xatosi",
+          description: "Fayl hajmi 2MB dan oshmasligi kerak",
           variant: "destructive"
         });
         return;
@@ -61,8 +60,8 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
       // Check file type
       if (!file.type.startsWith("image/")) {
         toast({
-          title: "Ошибка загрузки",
-          description: "Файл должен быть изображением",
+          title: "Yuklash xatosi",
+          description: "Fayl rasm formatida bo'lishi kerak",
           variant: "destructive"
         });
         return;
@@ -84,8 +83,8 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
   const onSubmit = (data: ProductFormValues) => {
     if (!imageFile && !imagePreview) {
       toast({
-        title: "Требуется изображение",
-        description: "Пожалуйста, загрузите изображение товара",
+        title: "Rasm talab qilinadi",
+        description: "Iltimos, mahsulot rasmini yuklang",
         variant: "destructive"
       });
       return;
@@ -99,8 +98,8 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
     });
     
     toast({
-      title: "Товар добавлен",
-      description: `${data.name} успешно добавлен в каталог`
+      title: "Mahsulot qo'shildi",
+      description: `${data.name} katalogga muvaffaqiyatli qo'shildi`
     });
     
     // Reset form and image
@@ -123,9 +122,9 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Название товара</FormLabel>
+                <FormLabel>Mahsulot nomi</FormLabel>
                 <FormControl>
-                  <Input placeholder="Название" {...field} />
+                  <Input placeholder="Nomi" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -137,10 +136,10 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
             name="price"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Цена (сум)</FormLabel>
+                <FormLabel>Narxi (so'm)</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="Цена" 
+                    placeholder="Narxi" 
                     type="number" 
                     {...field}
                     onChange={(e) => {
@@ -161,9 +160,9 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Описание</FormLabel>
+              <FormLabel>Tavsifi</FormLabel>
               <FormControl>
-                <Input placeholder="Описание товара" {...field} />
+                <Input placeholder="Mahsulot tavsifi" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -176,21 +175,21 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Категория</FormLabel>
+                <FormLabel>Kategoriya</FormLabel>
                 <Select 
                   onValueChange={field.onChange} 
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Выберите категорию" />
+                      <SelectValue placeholder="Kategoriyani tanlang" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="classic">Классическая</SelectItem>
-                    <SelectItem value="meat">Мясная</SelectItem>
-                    <SelectItem value="vegetable">Овощная</SelectItem>
-                    <SelectItem value="special">Особая</SelectItem>
+                    <SelectItem value="classic">Klassik</SelectItem>
+                    <SelectItem value="meat">Go'shtli</SelectItem>
+                    <SelectItem value="vegetable">Sabzavotli</SelectItem>
+                    <SelectItem value="special">Maxsus</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -199,7 +198,7 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
           />
           
           <div className="space-y-2">
-            <FormLabel>Изображение</FormLabel>
+            <FormLabel>Rasm</FormLabel>
             <div className="flex flex-col space-y-3">
               <div 
                 className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
@@ -209,7 +208,7 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
                   <div className="flex flex-col items-center">
                     <img 
                       src={imagePreview} 
-                      alt="Product preview" 
+                      alt="Mahsulot ko'rinishi" 
                       className="max-h-32 rounded-md mb-2" 
                     />
                     <Button 
@@ -222,17 +221,17 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
                         setImageFile(null);
                       }}
                     >
-                      Изменить
+                      O'zgartirish
                     </Button>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center py-4">
                     <ImagePlus className="h-8 w-8 text-gray-400 mb-2" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Нажмите для загрузки изображения
+                      Rasm yuklash uchun bosing
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      JPG, PNG, GIF до 2MB
+                      JPG, PNG, GIF (2MB gacha)
                     </p>
                   </div>
                 )}
@@ -248,7 +247,7 @@ const AddProductForm = ({ onProductAdded }: { onProductAdded?: () => void }) => 
           </div>
         </div>
         
-        <Button type="submit" className="w-full">Добавить товар</Button>
+        <Button type="submit" className="w-full">Mahsulot qo'shish</Button>
       </form>
     </Form>
   );

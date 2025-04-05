@@ -1,4 +1,3 @@
-
 import ProductCard from "./ProductCard";
 import { Product } from "@/data/products";
 
@@ -10,9 +9,9 @@ const ProductGrid = ({ products }: ProductGridProps) => {
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <h3 className="text-xl font-semibold mb-2">Товары не найдены</h3>
+        <h3 className="text-xl font-semibold mb-2">Mahsulotlar topilmadi</h3>
         <p className="text-muted-foreground text-center">
-          Попробуйте изменить параметры поиска или фильтры
+          Qidiruv parametrlarini yoki filtrlarni o'zgartiring
         </p>
       </div>
     );

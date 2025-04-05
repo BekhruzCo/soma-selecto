@@ -15,7 +15,7 @@ const CategoryFilter = ({ selectedCategory, onChange }: CategoryFilterProps) => 
         variant={selectedCategory === null ? "default" : "outline"}
         className="rounded-full whitespace-nowrap"
       >
-        Все
+        Hammasi
       </Button>
       
       {categories.map((category) => (
