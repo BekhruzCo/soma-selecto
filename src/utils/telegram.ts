@@ -14,7 +14,7 @@ export async function sendTelegramNotification(order: Order) {
       `${item.name} x ${item.quantity} = ${(item.price * item.quantity).toLocaleString()} сум`
     ).join('\n');
     
-    const deliveryCost = order.freeDelivery ? 0 : 15000;
+    const deliveryCost = order.freeDelivery ? 0 : 10000;
     const totalWithDelivery = order.total + (order.freeDelivery ? 0 : deliveryCost);
     
     const message = `

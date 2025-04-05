@@ -1,4 +1,3 @@
-
 import { 
   Dialog,
   DialogContent,
@@ -89,26 +88,26 @@ const OrderStatus = () => {
 
         <div className="mt-4 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
           {orders.map((order) => {
-            const deliveryCost = order.freeDelivery ? 0 : 15000;
+            const deliveryCost = order.freeDelivery ? 0 : 10000;
             const totalWithDelivery = order.total + deliveryCost;
             
             return (
               <div key={order.id} className="border rounded-md p-4 space-y-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <p className="font-medium">Заказ от {format(order.createdAt, "d MMMM, HH:mm", {locale: ru})}</p>
+                    <p className="font-medium">Buyurtma vaqti {format(order.createdAt, "d MMMM, HH:mm", {locale: ru})}</p>
                     <p className="text-sm text-muted-foreground">{order.customer.name}, {order.customer.phone}</p>
                   </div>
                   <OrderStatusBadge status={order.status} />
                 </div>
                 
                 <div>
-                  <p className="text-sm font-medium mb-1">Товары:</p>
+                  <p className="text-sm font-medium mb-1">Mahsulotlar:</p>
                   <ul className="text-sm space-y-1">
                     {order.items.map((item) => (
                       <li key={item.id} className="flex justify-between">
                         <span>{item.name} × {item.quantity}</span>
-                        <span className="font-medium">{(item.price * item.quantity).toLocaleString()} сум</span>
+                        <span className="font-medium">{(item.price * item.quantity).toLocaleString()} so'm</span>
                       </li>
                     ))}
                   </ul>
@@ -117,17 +116,17 @@ const OrderStatus = () => {
                 <div className="flex flex-col border-t pt-2 mt-2">
                   <div className="flex justify-between text-sm">
                     <span>Buyurtma narxi</span>
-                    <span className="font-medium">{order.total.toLocaleString()} сум</span>
+                    <span className="font-medium">{order.total.toLocaleString()} so'm</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Yetkazib berish:</span>
                     <span className={order.freeDelivery ? "text-green-600 dark:text-green-400 font-medium" : "font-medium"}>
-                      {order.freeDelivery ? "Бесплатно" : "15,000 сум"}
+                      {order.freeDelivery ? "Bepul" : "10,000 so'm"}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm font-medium mt-1">
                     <span>Jami:</span>
-                    <span>{totalWithDelivery.toLocaleString()} сум</span>
+                    <span>{totalWithDelivery.toLocaleString()} so'm</span>
                   </div>
                 </div>
                 
