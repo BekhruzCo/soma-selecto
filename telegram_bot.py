@@ -78,7 +78,6 @@ def get_admin_keyboard():
             InlineKeyboardButton(text="🛒 Mahsulotlar", callback_data="admin_products")
         ],
         [
-            InlineKeyboardButton(text="➕ Mahsulot qo'shish", callback_data="add_product"),
             InlineKeyboardButton(text="📈 Statistika", callback_data="admin_stats")
         ]
     ]
@@ -187,30 +186,30 @@ Buyurtma berish uchun veb-saytimizga tashrif buyuring.
 @router.message(Command("orders"))
 async def cmd_orders(message: types.Message):
     if message.from_user.id not in ADMIN_IDS:
-        await message.answer("У вас нет доступа к этой команде.")
+        await message.answer("Sizda ushbu buyruqqa kirish huquqi yo'q.")
         return
     
     orders = get_orders_from_api()
     if not orders:
-        await message.answer("Нет активных заказов или ошибка соединения с API.")
+        await message.answer("Faol buyurtmalar yo'q yoki API bilan aloqa o'rnatishda xatolik.")
         return
     
     active_orders = [order for order in orders 
                     if order["status"] not in ["completed", "cancelled"]]
     
     if not active_orders:
-        await message.answer("Нет активных заказов.")
+        await message.answer("Faol buyurtmalar yo'q.")
         return
     
     for order in active_orders:
         order_id = order["id"]
         order_text = f"""
-Заказ #{order_id[-5:] if len(order_id) > 5 else order_id}
-Статус: {get_status_text(order["status"])}
-Клиент: {order["customer"]["name"]}
-Телефон: {order["customer"]["phone"]}
-Адрес: {order["customer"]["address"]}
-Сумма: {order["total"]} сум
+Buyurtma #{order_id[-5:] if len(order_id) > 5 else order_id}
+Holat: {get_status_text(order["status"])}
+Mijoz: {order["customer"]["name"]}
+Telefon: {order["customer"]["phone"]}
+Manzil: {order["customer"]["address"]}
+Jami: {order["total"]} so'm
 """
         await message.answer(order_text, reply_markup=get_order_keyboard(order_id))
 
@@ -218,20 +217,20 @@ async def cmd_orders(message: types.Message):
 @router.message(Command("products"))
 async def cmd_products(message: types.Message):
     if message.from_user.id not in ADMIN_IDS:
-        await message.answer("У вас нет доступа к этой команде.")
+        await message.answer("Sizda ushbu buyruqqa kirish huquqi yo'q.")
         return
     
     products = get_products_from_api()
     if not products:
-        await message.answer("Список товаров пуст или ошибка соединения с API.")
+        await message.answer("Mahsulotlar ro'yxati bo'sh yoki API bilan aloqa o'rnatishda xatolik.")
         return
     
     for product in products:
         product_text = f"""
 🍽 {product["name"]}
 📝 {product["description"]}
-💰 {product["price"]} сум
-🏷 Категория: {product["category"]}
+💰 {product["price"]} so'm
+🏷 Kategoriya: {product["category"]}
 """
         # If product has an image, send it with the message
         if product.get("image"):
@@ -252,12 +251,12 @@ async def cmd_products(message: types.Message):
 @router.message(Command("stats"))
 async def cmd_stats(message: types.Message):
     if message.from_user.id not in ADMIN_IDS:
-        await message.answer("У вас нет доступа к этой команде.")
+        await message.answer("Sizda ushbu buyruqqa kirish huquqi yo'q.")
         return
     
     orders = get_orders_from_api()
     if not orders:
-        await message.answer("Нет данных о заказах или ошибка соединения с API.")
+        await message.answer("Buyurtmalar haqida ma'lumot yo'q yoki API bilan aloqa o'rnatishda xatolik.")
         return
     
     total_orders = len(orders)
@@ -268,14 +267,14 @@ async def cmd_stats(message: types.Message):
     total_revenue = sum([o["total"] for o in orders if o["status"] == "completed"])
     
     stats_text = f"""
-📊 Статистика заказов:
+📊 Buyurtmalar statistikasi:
 
-Всего заказов: {total_orders}
-Активных заказов: {active_orders}
-Выполненных заказов: {completed_orders}
-Отмененных заказов: {cancelled_orders}
+Jami buyurtmalar: {total_orders}
+Faol buyurtmalar: {active_orders}
+Yakunlangan buyurtmalar: {completed_orders}
+Bekor qilingan buyurtmalar: {cancelled_orders}
 
-💰 Общая выручка: {total_revenue} сум
+💰 Umumiy daromad: {total_revenue} so'm
 """
     await message.answer(stats_text)
 
@@ -285,7 +284,7 @@ async def cmd_status(message: types.Message):
     # Parse order ID from command (e.g., /status 12345)
     command_parts = message.text.split()
     if len(command_parts) != 2:
-        await message.answer("Пожалуйста, укажите номер заказа: /status [номер]")
+        await message.answer("Iltimos, buyurtma raqamini kiriting: /status [raqam]")
         return
     
     order_id = command_parts[1]
@@ -297,21 +296,21 @@ async def cmd_status(message: types.Message):
             order = response.json()
             
             status_texts = {
-                "processing": "в обработке",
-                "delivering": "доставляется",
-                "completed": "доставлен",
-                "cancelled": "отменен"
+                "processing": "qabul qilingan",
+                "delivering": "yetkazilmoqda",
+                "completed": "yetkazildi",
+                "cancelled": "bekor qilindi"
             }
             
-            status_text = status_texts.get(order["status"], "неизвестен")
+            status_text = status_texts.get(order["status"], "noma'lum")
             
-            response_text = f"Статус заказа #{order_id}: {status_text}"
+            response_text = f"Buyurtma #{order_id} holati: {status_text}"
             await message.answer(response_text)
         else:
-            await message.answer(f"Заказ #{order_id} не найден.")
+            await message.answer(f"Buyurtma #{order_id} topilmadi.")
     except Exception as e:
         logging.error(f"Error getting order status: {e}")
-        await message.answer("Ошибка при получении статуса заказа. Попробуйте позже.")
+        await message.answer("Buyurtma holatini olishda xatolik yuz berdi. Iltimos, keyinroq qayta urinib ko'ring.")
 
 # Helper function to get status text
 def get_status_text(status):
@@ -327,7 +326,7 @@ def get_status_text(status):
 @router.callback_query(lambda c: c.data == "add_product")
 async def add_product_start(callback: types.CallbackQuery, state: FSMContext):
     if callback.from_user.id not in ADMIN_IDS:
-        await callback.answer("У вас нет доступа к этой функции.")
+        await callback.answer("Sizda ushbu funksiyaga kirish huquqi yo'q.")
         return
         
     await callback.message.answer("Mahsulot nomini kiriting:")
@@ -549,7 +548,7 @@ Jami: {order["total"]} so'm
 @router.callback_query(lambda c: c.data.startswith("admin_"))
 async def admin_menu_actions(callback: types.CallbackQuery):
     if callback.from_user.id not in ADMIN_IDS:
-        await callback.answer("У вас нет доступа к этой функции.")
+        await callback.answer("Sizda ushbu funksiyaga kirish huquqi yo'q.")
         return
         
     action = callback.data.split("_")[1]
@@ -561,7 +560,7 @@ async def admin_menu_actions(callback: types.CallbackQuery):
     elif action == "stats":
         await cmd_stats(callback.message)
     else:
-        await callback.answer("Функция в разработке")
+        await callback.answer("Funksiya ishlab chiqilmoqda")
     
     await callback.answer()
 
