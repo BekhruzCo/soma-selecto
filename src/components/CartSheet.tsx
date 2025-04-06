@@ -116,7 +116,7 @@ const CartSheet = () => {
         </Alert>
       )}
       
-      <div className="flex flex-col gap-3 my-4">
+      <div className="flex flex-col gap-3 my-4 max-h-[40vh] overflow-y-auto pr-2">
         {items.map((item) => (
           <div key={item.id} className="cart-item">
             <div className="w-16 h-16 rounded-md overflow-hidden">
