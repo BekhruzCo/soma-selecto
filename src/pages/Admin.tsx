@@ -359,17 +359,19 @@ const OrdersTab = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
   
-  const filteredOrders = orders.filter(order => {
-    const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-    const matchesSearch = 
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customer.address.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredOrders = orders
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // Eng yangi buyurtmalar birinchi
+    .filter(order => {
+      const matchesStatus = statusFilter === "all" || order.status === statusFilter;
+      const matchesSearch = 
+        order.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.customer.phone.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.customer.address.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      return matchesStatus && matchesSearch;
+    });
     
-    return matchesStatus && matchesSearch;
-  });
-  
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = filteredOrders.slice(indexOfFirstOrder, indexOfLastOrder);

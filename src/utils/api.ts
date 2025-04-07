@@ -6,7 +6,7 @@ import { Order } from "@/hooks/use-cart";
 import { Product } from "@/data/products";
 
 // Base API URL - change this to your actual API URL when deployed
-const API_URL = "http://localhost:8000";
+const API_URL = "https://denov-baraka-somsa.vercel.app/";
 
 // Products collection ga reference olish
 const PRODUCTS_COLLECTION = "products";
