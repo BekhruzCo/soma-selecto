@@ -17,46 +17,48 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
   const [filteredProducts, setFilteredProducts] = useState(products);
   const { items } = useCart();
-  
+
   // Apply filters when search term or category changes
   useEffect(() => {
     let results = products;
-    
+
     // Filter by category
     if (selectedCategory) {
       results = results.filter(product => product.category === selectedCategory);
     }
-    
+
     // Filter by search term
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      results = results.filter(product => 
-        product.name.toLowerCase().includes(term) || 
+      results = results.filter(product =>
+        product.name.toLowerCase().includes(term) ||
         product.description.toLowerCase().includes(term)
       );
     }
-    
+
     setFilteredProducts(results);
   }, [searchTerm, selectedCategory]);
 
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow pb-8">
-        <div className="container mx-auto px-4 pt-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Denov Baraka Somsa</h1>
-            <div className="flex items-center gap-3">
-              <ThemeToggle />
+        <div className="container mx-auto px-2 pt-6">
+          <div className="flex justify-between">
+            <h1 className="text-3xl font-bold h-20 ">Denov Baraka Somsa <ThemeToggle /></h1>
+          </div>
+          <div className="flex justify-between items-center mb-10">
+            <div className="flex items-center gap-1 ">
+            
               <OrderStatus />
               <Link to="/admin">
                 <Button variant="outline" size="sm">
-                  <Settings className="h-4 w-4 mr-1" />
+                  <Settings className="h-3 w-4 mr-1" />
                   Admin
                 </Button>
               </Link>
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button variant="outline" className="relative">
+                  <Button variant="outline" className="relative" size="sm">
                     <ShoppingCart className="h-5 w-5 mr-1" />
                     <span>Savat</span>
                     {items.length > 0 && (
@@ -72,14 +74,14 @@ const Index = () => {
               </Sheet>
             </div>
           </div>
-          
-          <CategoryFilter 
-            selectedCategory={selectedCategory} 
-            onChange={setSelectedCategory} 
+
+          <CategoryFilter
+            selectedCategory={selectedCategory}
+            onChange={setSelectedCategory}
           />
-          
+
           <Separator className="my-6" />
-          
+
           <ProductGrid products={filteredProducts} />
         </div>
       </main>

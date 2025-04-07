@@ -1,4 +1,3 @@
-
 """
 Denov Baraka Somsa REST API
 
@@ -126,7 +125,7 @@ def get_product(product_id: str):
             return product
     raise HTTPException(status_code=404, detail="Product not found")
 
-@app.post("/products")
+@app.post("/products", status_code=status.HTTP_201_CREATED)
 async def create_product(
     name: str = Form(...),
     description: str = Form(...),
@@ -135,34 +134,66 @@ async def create_product(
     popular: bool = Form(False),
     image: Optional[UploadFile] = File(None)
 ):
+    if price <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Price must be greater than 0"
+        )
+    
     product_id = f"p{str(uuid.uuid4())[:8]}"
     
     image_path = None
     if image:
-        # Save the uploaded image
-        file_extension = os.path.splitext(image.filename)[1]
-        image_path = f"uploads/{product_id}{file_extension}"
+        try:
+            # Validate image file extension
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+            file_extension = os.path.splitext(image.filename)[1].lower()
+            if file_extension not in allowed_extensions:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Invalid image format. Allowed formats: JPG, JPEG, PNG, WEBP"
+                )
+
+            # Save the uploaded image
+            image_path = f"uploads/{product_id}{file_extension}"
+            
+            with open(image_path, "wb") as buffer:
+                shutil.copyfileobj(image.file, buffer)
+            
+            # Use relative path for storage
+            image_path = f"/{image_path}"
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error uploading image: {str(e)}"
+            )
+    
+    try:
+        new_product = {
+            "id": product_id,
+            "name": name.strip(),
+            "description": description.strip(),
+            "price": price,
+            "category": category.strip(),
+            "popular": popular,
+            "image": image_path
+        }
         
-        with open(image_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
+        products.append(new_product)
+        save_data()
         
-        # Use relative path for storage
-        image_path = f"/{image_path}"
-    
-    new_product = {
-        "id": product_id,
-        "name": name,
-        "description": description,
-        "price": price,
-        "category": category,
-        "popular": popular,
-        "image": image_path
-    }
-    
-    products.append(new_product)
-    save_data()
-    
-    return new_product
+        return new_product
+    except Exception as e:
+        # If product creation fails, delete uploaded image
+        if image_path and os.path.exists(image_path.lstrip("/")):
+            try:
+                os.remove(image_path.lstrip("/"))
+            except:
+                pass
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error creating product: {str(e)}"
+        )
 
 @app.put("/products/{product_id}")
 async def update_product(

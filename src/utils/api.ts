@@ -1,4 +1,3 @@
-
 /**
  * API client for interacting with the backend REST API
  */
@@ -8,6 +7,9 @@ import { Product } from "@/data/products";
 
 // Base API URL - change this to your actual API URL when deployed
 const API_URL = "http://localhost:8000";
+
+// Products collection ga reference olish
+const PRODUCTS_COLLECTION = "products";
 
 /**
  * Fetch all products from the API
@@ -46,22 +48,37 @@ export async function fetchProduct(id: string): Promise<Product> {
 /**
  * Create a new product
  */
-export async function createProduct(productData: FormData): Promise<Product> {
+export async function createProduct(productData: Omit<Product, "id">): Promise<Product> {
+  if (!productData.name || !productData.price || !productData.category) {
+    throw new Error('Missing required fields');
+  }
+
   try {
-    console.log("Creating product with data:", Object.fromEntries(productData.entries()));
-    
     const response = await fetch(`${API_URL}/products`, {
       method: 'POST',
-      body: productData, // FormData for multipart/form-data (supports file uploads)
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        name: productData.name,
+        price: Number(productData.price),
+        category: productData.category,
+        image: productData.image || ''
+      })
     });
     
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.error("Server error response:", errorData);
-      throw new Error(`Error creating product: ${response.statusText}`);
+      throw new Error(`Server responded with ${response.status}: ${response.statusText}`);
     }
     
-    return await response.json();
+    const newProduct = await response.json();
+    
+    if (!newProduct) {
+      throw new Error('Server returned empty response');
+    }
+    
+    return newProduct;
   } catch (error) {
     console.error("Error creating product:", error);
     throw error;

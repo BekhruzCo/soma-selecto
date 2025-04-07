@@ -55,8 +55,8 @@ const CartSheet = () => {
     addOrder(orderForm);
     
     toast({
-      title: "Заказ оформлен!",
-      description: "Мы свяжемся с вами в ближайшее время",
+      title: "Buyurtma qabul qilindi!",
+      description: "Tez orada siz bilan bog'lanamiz",
     });
     
     setOrderDialogOpen(false);
@@ -118,7 +118,7 @@ const CartSheet = () => {
       
       <div className="flex flex-col gap-3 my-4 max-h-[40vh] overflow-y-auto pr-2">
         {items.map((item) => (
-          <div key={item.id} className="cart-item">
+          <div key={item.id} className="">
             <div className="w-16 h-16 rounded-md overflow-hidden">
               <img 
                 src={item.image} 
@@ -127,7 +127,7 @@ const CartSheet = () => {
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-medium text-sm line-clamp-1">{item.name}</h4>
+              <h4 className="font-medium text-sm line-clamp-2">{item.name}</h4>
               <p className="text-muted-foreground text-sm">{item.price.toLocaleString()} сум</p>
               
               <div className="flex items-center gap-3 mt-2">
@@ -160,11 +160,11 @@ const CartSheet = () => {
                   <Trash className="h-3 w-3" />
                 </Button>
               </div>
-            </div>
-            <div className="text-right">
-              <span className="font-medium">
-                {(item.price * item.quantity).toLocaleString()} сум
-              </span>
+              <div className="text-right">
+                <span className="font-medium">
+                  {(item.price * item.quantity).toLocaleString()} сум
+                </span>
+              </div>
             </div>
           </div>
         ))}
@@ -194,15 +194,15 @@ const CartSheet = () => {
           <DialogTrigger asChild>
             <Button className="w-full">Buyurtma berish</Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
+          <DialogContent className="max-w-[100vw] h-[100vh] md:h-auto md:max-w-[425px] md:max-h-[90vh] p-0 md:p-6">
+            <DialogHeader className="p-6 md:p-0">
               <DialogTitle>Buyurtma rasmiylashtirish</DialogTitle>
               <DialogDescription>
                 Yetkazib berish uchun ma'lumotlarni to'ldiring
               </DialogDescription>
             </DialogHeader>
             
-            <form onSubmit={handleSubmitOrder}>
+            <form onSubmit={handleSubmitOrder} className="px-6 md:px-0">
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
                   <Label htmlFor="name">Ism</Label>
@@ -239,7 +239,7 @@ const CartSheet = () => {
                 </div>
               </div>
               
-              <DialogFooter>
+              <DialogFooter className="p-6 md:p-0">
                 <Button 
                   type="button" 
                   variant="outline"

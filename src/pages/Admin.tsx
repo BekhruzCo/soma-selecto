@@ -67,6 +67,9 @@ import ProductCard from "@/components/ProductCard";
 import { fetchProducts, deleteProduct } from "@/utils/api";
 import { sendProductUpdateToTelegram } from "@/utils/telegram";
 import { Product } from "@/data/products";
+import { products as initialProducts } from '../data/products'; 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import * as XLSX from 'xlsx';
 
 const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   switch (status) {
@@ -95,8 +98,8 @@ const ProductsTab = () => {
     const loadProducts = async () => {
       try {
         setIsLoading(true);
-        const fetchedProducts = await fetchProducts();
-        setProducts(fetchedProducts);
+        // Tayyor mahsulotlar ro'yxatini ishlatish
+        setProducts(initialProducts);
       } catch (error) {
         console.error("Error loading products:", error);
         toast({
@@ -167,6 +170,38 @@ const ProductsTab = () => {
     });
   };
 
+  const handleExport = () => {
+    try {
+      // Excel uchun ma'lumotlarni tayyorlash
+      const exportData = products.map(product => ({
+        'ID': `#${product.id.slice(-5)}`,
+        'Nomi': product.name,
+        'Narxi': `${product.price.toLocaleString()} so'm`,
+        'Kategoriya': product.category === 'classic' ? 'Klassik' : "Go'shtli"
+      }));
+
+      // Excel yaratish
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Mahsulotlar");
+      
+      // Faylni yuklab olish
+      XLSX.writeFile(wb, `mahsulotlar-${format(new Date(), "dd-MM-yyyy")}.xlsx`);
+
+      toast({
+        title: "Muvaffaqiyatli",
+        description: "Mahsulotlar ro'yxati Excel formatida yuklab olindi",
+      });
+    } catch (error) {
+      console.error("Export error:", error);
+      toast({
+        title: "Xatolik",
+        description: "Excel faylni yaratishda xatolik yuz berdi",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center p-12">
@@ -177,7 +212,8 @@ const ProductsTab = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
+      {/* Mahsulot qo'shish FORMA si */}
+      {/* <Card>
         <CardHeader>
           <CardTitle>Yangi mahsulot qo'shish</CardTitle>
           <CardDescription>Katalogga yangi mahsulot qo'shish uchun formani to'ldiring</CardDescription>
@@ -185,7 +221,7 @@ const ProductsTab = () => {
         <CardContent>
           <AddProductForm onProductAdded={handleProductAdded} />
         </CardContent>
-      </Card>
+      </Card> */}
       
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -193,7 +229,7 @@ const ProductsTab = () => {
             <CardTitle>Mahsulotlarni boshqarish</CardTitle>
             <CardDescription>Katalogdagi mahsulotlarni ko'rish va tahrirlash</CardDescription>
           </div>
-          <Button variant="outline" size="sm" className="h-8">
+          <Button variant="outline" size="sm" className="h-8" onClick={handleExport}>
             <Plus className="h-3.5 w-3.5 mr-1" />
             Eksport
           </Button>
@@ -238,50 +274,48 @@ const ProductsTab = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="h-8"
-                          onClick={() => handleEditProduct(product)}
-                        >
-                          <Pencil className="h-3.5 w-3.5 mr-1" />
-                          O'zgartirish
-                        </Button>
-                        <AlertDialog open={isDeleteDialogOpen && selectedProduct?.id === product.id}>
-                          <AlertDialogTrigger asChild>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="h-8 text-destructive hover:text-destructive"
-                              onClick={() => {
-                                setSelectedProduct(product);
-                                setIsDeleteDialogOpen(true);
-                              }}
-                            >
-                              <Trash2 className="h-3.5 w-3.5 mr-1" />
-                              O'chirish
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Mahsulotni o'chirish?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Siz ushbu mahsulotni o'chirishni xohlaysizmi? Bu amalni bekor qilib bo'lmaydi.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>
-                                Bekor qilish
-                              </AlertDialogCancel>
-                              <AlertDialogAction 
-                                onClick={() => selectedProduct && handleDeleteProduct(selectedProduct.id)}
-                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 cursor-not-allowed opacity-50"
+                                disabled={true}
+                                onClick={() => handleEditProduct(product)}
                               >
+                                <Pencil className="h-3.5 w-3.5 mr-1" />
+                                O'zgartirish
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Hozircha ishlamaydi</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 text-destructive hover:text-destructive cursor-not-allowed opacity-50"
+                                disabled={true}
+                                onClick={() => {
+                                  setSelectedProduct(product);
+                                  setIsDeleteDialogOpen(true);
+                                }}
+                              >
+                                <Trash2 className="h-3.5 w-3.5 mr-1" />
                                 O'chirish
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Hozircha ishlamaydi</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -364,6 +398,37 @@ const OrdersTab = () => {
     
     setSelectedOrderId(null);
     setActionType(null);
+  };
+
+  const handleOrderStatusChange = async (orderId: string | null, newStatus: Order["status"]) => {
+    if (!orderId) return;
+    
+    try {
+      updateOrderStatus(orderId, newStatus);
+      await updateOrderStatusViaTelegram(orderId, newStatus);
+      
+      const statusMessages = {
+        processing: "qayta ishlashga qabul qilindi",
+        delivering: "yetkazib berishga topshirildi",
+        completed: "yetkazib berildi",
+        cancelled: "bekor qilindi"
+      };
+      
+      toast({
+        title: "Holat yangilandi",
+        description: `Buyurtma #${orderId.slice(-5)} ${statusMessages[newStatus]}`,
+      });
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      toast({
+        title: "Xatolik",
+        description: "Buyurtma holatini yangilashda xatolik yuz berdi",
+        variant: "destructive"
+      });
+    } finally {
+      setSelectedOrderId(null);
+      setActionType(null);
+    }
   };
 
   const getDialogContent = () => {
@@ -507,7 +572,7 @@ const OrdersTab = () => {
                 </TableHeader>
                 <TableBody>
                   {currentOrders.map((order) => {
-                    const deliveryCost = order.freeDelivery ? 0 : 15000;
+                    const deliveryCost = order.freeDelivery ? 0 : 10000;
                     const totalWithDelivery = order.total + deliveryCost;
                     
                     return (
@@ -522,31 +587,51 @@ const OrdersTab = () => {
                         <TableCell>
                           <div>{order.total.toLocaleString()} so'm</div>
                           <div className="text-sm text-muted-foreground">
-                            + {order.freeDelivery ? "Bepul yetkazib berish" : "Yetkazib berish 15,000 so'm"}
+                            + {order.freeDelivery ? "Bepul yetkazib berish" : "Yetkazib berish 10,000 so'm"}
                           </div>
                           <div className="font-medium">{totalWithDelivery.toLocaleString()} so'm</div>
                         </TableCell>
                         <TableCell><OrderStatusBadge status={order.status} /></TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            {order.status === "processing" && (
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    className="h-8"
-                                    onClick={() => {
-                                      setSelectedOrderId(order.id);
-                                      setActionType("deliver");
-                                    }}
+                          {order.status === "processing" && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="h-8"
+                                  onClick={() => {
+                                    setSelectedOrderId(order.id);
+                                    setActionType("deliver");
+                                  }}
+                                >
+                                  <Truck className="h-3.5 w-3.5 mr-1" />
+                                  Yetkazish
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Buyurtmani yetkazishga o'tkazish</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Buyurtma yetkazib berish jarayoniga o'tkazilsinmi?
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel onClick={() => setSelectedOrderId(null)}>
+                                    Bekor qilish
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleOrderStatusChange(selectedOrderId, "delivering")}
                                   >
-                                    <Truck className="h-3.5 w-3.5 mr-1" />
-                                    Yetkazish
-                                  </Button>
-                                </AlertDialogTrigger>
-                              </AlertDialog>
-                            )}
+                                    Tasdiqlash
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
+
+
                             
                             {order.status === "delivering" && (
                               <AlertDialog>
@@ -564,6 +649,24 @@ const OrdersTab = () => {
                                     Tugatish
                                   </Button>
                                 </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Buyurtmani tugatish</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Buyurtma yetkazib berildi deb belgilansinmi?
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel onClick={() => setSelectedOrderId(null)}>
+                                      Bekor qilish
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleOrderStatusChange(selectedOrderId, "completed")}
+                                    >
+                                      Tasdiqlash
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
                               </AlertDialog>
                             )}
                             
@@ -583,6 +686,25 @@ const OrdersTab = () => {
                                     Bekor qilish
                                   </Button>
                                 </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Buyurtmani bekor qilish</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Buyurtmani bekor qilishni tasdiqlaysizmi?
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel onClick={() => setSelectedOrderId(null)}>
+                                      Yo'q
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction 
+                                      onClick={() => handleOrderStatusChange(selectedOrderId, "cancelled")}
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                    >
+                                      Ha, bekor qilish
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
                               </AlertDialog>
                             )}
                           </div>
@@ -840,4 +962,3 @@ const OrdersTab = () => {
   };
   
   export default Admin;
-  

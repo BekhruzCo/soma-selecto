@@ -39,7 +39,7 @@ const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
       break;
     case "delivering":
       variant = "outline";
-      label = "Yetkazib berildi";
+      label = "Yetkazilmoqda";
       className = "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900";
       break;
     case "completed":
@@ -74,7 +74,7 @@ const OrderStatus = () => {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <ClipboardList className="h-4 w-4" />
-          <span>Mening buyurtmalarim</span>
+          <span>buyurtma</span>
           <Badge variant="secondary" className="ml-1">{orders.length}</Badge>
         </Button>
       </DialogTrigger>

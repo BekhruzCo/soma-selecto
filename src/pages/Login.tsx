@@ -8,26 +8,42 @@ import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const adminPassword = import.meta.env.VITE_ADMIN_PASSWORD;
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (password === adminPassword) {
-      localStorage.setItem("admin_authenticated", "true");
+    if (!password.trim()) {
       toast({
-        title: "Muvaffaqiyatli kirish",
-        description: "Siz admin paneliga kirdingiz",
-      });
-      navigate("/admin");
-    } else {
-      toast({
-        title: "Xatolik yuz berdi",
-        description: "Noto'g'ri parol",
+        title: "Xatolik",
+        description: "Parolni kiriting",
         variant: "destructive",
       });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (password === adminPassword) {
+        localStorage.setItem("admin_authenticated", "true");
+        toast({
+          title: "Muvaffaqiyatli kirish",
+          description: "Siz admin paneliga kirdingiz",
+        });
+        navigate("/admin");
+      } else {
+        setPassword("");
+        toast({
+          title: "Xatolik yuz berdi",
+          description: "Noto'g'ri parol",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,8 +71,19 @@ const Login = () => {
               </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full">Kirish</Button>
+          <CardFooter className="flex gap-4">
+            <Button 
+              type="button"
+              variant="outline" 
+              className="w-full" 
+              onClick={() => navigate("/")}
+              disabled={isLoading}
+            >
+              Orqaga
+            </Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Kirish..." : "Kirish"}
+            </Button>
           </CardFooter>
         </form>
       </Card>

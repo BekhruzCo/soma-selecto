@@ -1,5 +1,10 @@
 import { Order } from "@/hooks/use-cart";
 
+// Add this at the top of the file
+let lastMessageTimestamp = 0;
+let lastMessage = '';
+const DEBOUNCE_DELAY = 2000; // 2 seconds
+
 /**
  * Send order notification to a Telegram channel/chat
  */
@@ -68,20 +73,42 @@ ${items}
  */
 export async function updateOrderStatusViaTelegram(orderId: string, status: string) {
   try {
-    // Replace with your actual bot token and chat ID
-    const botToken = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y";
-    const chatId = "-1002481535077";
-    
-    const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    
+    const currentMessage = `${orderId}-${status}`;
+    const now = Date.now();
+
+    // Check if the same message was sent recently
+    if (currentMessage === lastMessage && (now - lastMessageTimestamp) < DEBOUNCE_DELAY) {
+      console.log('Skipping duplicate message within debounce period');
+      return { ok: true, skipped: true };
+    }
+
+    // Update tracking variables
+    lastMessage = currentMessage;
+    lastMessageTimestamp = now;
+
+    console.log(`Attempting to update status for order ${orderId} to ${status}`); // Debug log
+
+    // Validate status
     const statusMessages = {
       "processing": "qabul qilindi",
       "delivering": "yetkazib berilmoqda",
       "completed": "yetkazib berildi",
       "cancelled": "bekor qilindi"
     };
+
+    if (!statusMessages[status as keyof typeof statusMessages]) {
+      console.warn(`Invalid status: ${status}`);
+      return { ok: false, error: "Invalid status" };
+    }
+
+    // Replace with your actual bot token and chat ID
+    const botToken = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y";
+    const chatId = "-1002481535077";
     
     const message = `Buyurtma #${orderId.slice(-5)} holati o'zgartirildi: ${statusMessages[status as keyof typeof statusMessages]}`;
+    console.log(`Preparing to send message: ${message}`); // Debug log
+    
+    const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
     
     const response = await fetch(telegramApiUrl, {
       method: 'POST',

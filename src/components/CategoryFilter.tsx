@@ -9,7 +9,7 @@ interface CategoryFilterProps {
 
 const CategoryFilter = ({ selectedCategory, onChange }: CategoryFilterProps) => {
   return (
-    <div className="flex overflow-x-auto pb-2 gap-2 no-scrollbar">
+    <div className="flex overflow-x-auto pb-2 gap-1 no-scrollbar">
       <Button
         onClick={() => onChange(null)}
         variant={selectedCategory === null ? "default" : "outline"}
