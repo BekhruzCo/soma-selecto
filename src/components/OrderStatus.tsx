@@ -10,8 +10,10 @@ import { Button } from "@/components/ui/button";
 import { useCart, Order } from "@/hooks/use-cart";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { ClipboardList, Check, Truck, Package, X } from "lucide-react";
+import { ClipboardList, Check, Truck, Package, X, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useState } from 'react';
+import { updateOrderRating } from '@/utils/api';
 
 const OrderStatusIcon = ({ status }: { status: Order["status"] }) => {
   switch (status) {
@@ -62,8 +64,52 @@ const OrderStatusBadge = ({ status }: { status: Order["status"] }) => {
   );
 };
 
+const StarRating = ({ 
+  rating, 
+  onRating, 
+  disabled 
+}: { 
+  rating: number; 
+  onRating: (rating: number) => void;
+  disabled: boolean;
+}) => {
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          onClick={() => !disabled && onRating(star)}
+          disabled={disabled}
+          className={`transition-colors ${
+            disabled ? "cursor-default" : "hover:text-yellow-400"
+          } ${
+            star <= rating ? "text-yellow-400" : "text-gray-300"
+          }`}
+        >
+          <Star className="h-5 w-5 fill-current" />
+        </button>
+      ))}
+    </div>
+  );
+};
+
 const OrderStatus = () => {
-  const { orders } = useCart();
+  const { orders, updateOrder } = useCart();
+  const [isRating, setIsRating] = useState(false);
+
+  const handleRating = async (orderId: string, rating: number) => {
+    if (isRating) return;
+    
+    try {
+      setIsRating(true);
+      const updatedOrder = await updateOrderRating(orderId, rating);
+      updateOrder(updatedOrder);
+    } catch (error) {
+      console.error('Failed to update rating:', error);
+    } finally {
+      setIsRating(false);
+    }
+  };
 
   if (orders.length === 0) {
     return null;
@@ -133,10 +179,27 @@ const OrderStatus = () => {
                 <div className="text-sm text-muted-foreground">
                   <span>Manzil: {order.customer.address}</span>
                 </div>
+                
+                {order.status === "completed" && (
+                  <div className="border-t pt-3">
+                    <p className="text-sm font-medium mb-2">
+                      {order.rating 
+                        ? "Sizning bahoyingiz:" 
+                        : "Yetkazib berish xizmatini baholang:"}
+                    </p>
+                    <StarRating 
+                      rating={order.rating || 0} 
+                      onRating={(rating) => handleRating(order.id, rating)}
+                      disabled={!!order.rating || isRating}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
+
+        
       </DialogContent>
     </Dialog>
   );

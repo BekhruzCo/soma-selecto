@@ -6,7 +6,7 @@ import { Order } from "@/hooks/use-cart";
 import { Product } from "@/data/products";
 
 // Base API URL - change this to your actual API URL when deployed
-const API_URL = "https://denov-baraka-somsa.vercel.app/";
+const API_URL = "http://127.0.0.1:8000";
 
 // Products collection ga reference olish
 const PRODUCTS_COLLECTION = "products";
@@ -225,6 +225,36 @@ export async function updateOrderStatus(id: string, status: string): Promise<Ord
     };
   } catch (error) {
     console.error(`Error updating order ${id} status:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Update order rating
+ */
+export async function updateOrderRating(id: string, rating: number): Promise<Order> {
+  if (rating < 1 || rating > 5) {
+    throw new Error('Rating must be between 1 and 5');
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/orders/${id}/rating?rating=${rating}`, {
+      method: 'PUT',
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      console.error("Server error response:", errorData);
+      throw new Error(`Error updating order rating: ${response.statusText}`);
+    }
+    
+    const order = await response.json();
+    return {
+      ...order,
+      createdAt: new Date(order.createdAt)
+    };
+  } catch (error) {
+    console.error(`Error updating order ${id} rating:`, error);
     throw error;
   }
 }

@@ -1,4 +1,3 @@
-
 import { Product } from "@/data/products";
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { sendTelegramNotification, updateOrderStatusViaTelegram } from "@/utils/telegram";
@@ -72,6 +71,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       const apiOrders = await fetchOrders();
       setOrders(apiOrders);
+      // Save successful API response to localStorage
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('orders', JSON.stringify(apiOrders));
+      }
     } catch (error) {
       console.error("Error loading orders:", error);
       // Fallback to local storage if API fails

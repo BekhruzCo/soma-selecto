@@ -44,7 +44,8 @@ const Index = () => {
       <main className="flex-grow pb-8">
         <div className="container mx-auto px-2 pt-6">
           <div className="flex justify-between">
-            <h1 className="text-3xl font-bold h-20 ">Denov Baraka Somsa <ThemeToggle /></h1>
+            <h1 className="text-3xl font-bold mb-2 ">Denov Baraka Somsa</h1>
+            <ThemeToggle />
           </div>
           <div className="flex justify-between items-center mb-10">
             <div className="flex items-center gap-1 ">
