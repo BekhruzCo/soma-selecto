@@ -11,7 +11,7 @@ const DEBOUNCE_DELAY = 2000; // 2 seconds
 export async function sendTelegramNotification(order: Order) {
   try {
     // Replace these with your actual bot token and chat ID
-    const botToken = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y";
+    const botToken = "7593313918:AAGvXS37aYTZQvXMRkvC70FhiA_Hma6u-v4";
     const chatId = "-1002481535077";
     
     // Format message
@@ -102,7 +102,7 @@ export async function updateOrderStatusViaTelegram(orderId: string, status: stri
     }
 
     // Replace with your actual bot token and chat ID
-    const botToken = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y";
+    const botToken = "7593313918:AAGvXS37aYTZQvXMRkvC70FhiA_Hma6u-v4";
     const chatId = "-1002481535077";
     
     const message = `Buyurtma #${orderId.slice(-5)} holati o'zgartirildi: ${statusMessages[status as keyof typeof statusMessages]}`;
@@ -144,7 +144,7 @@ export async function updateOrderStatusViaTelegram(orderId: string, status: stri
 export async function sendProductUpdateToTelegram(action: 'add' | 'edit' | 'delete', product: { id: string, name: string, price: number }) {
   try {
     // Replace with your actual bot token and chat ID
-    const botToken = "7800150423:AAHGggsUXgUmZxLZY7MnSv0f9X0vD6GBx2Y";
+    const botToken = "7593313918:AAGvXS37aYTZQvXMRkvC70FhiA_Hma6u-v4";
     const chatId = "-1002481535077";
     
     const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;

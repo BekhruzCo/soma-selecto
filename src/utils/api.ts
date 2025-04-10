@@ -6,7 +6,7 @@ import { Order } from "@/hooks/use-cart";
 import { Product } from "@/data/products";
 
 // Base API URL - change this to your actual API URL when deployed
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = "http://192.168.1.3:8000";
 
 // Products collection ga reference olish
 const PRODUCTS_COLLECTION = "products";
